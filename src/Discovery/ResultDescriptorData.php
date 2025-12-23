@@ -9,6 +9,7 @@
 
 namespace Cline\Forrst\Discovery;
 
+use InvalidArgumentException;
 use Spatie\LaravelData\Data;
 
 /**
@@ -46,5 +47,58 @@ final class ResultDescriptorData extends Data
         public readonly ?array $schema = null,
         public readonly bool $collection = false,
         public readonly ?string $description = null,
-    ) {}
+    ) {
+        // Validate mutually exclusive fields
+        if ($this->resource !== null && $this->schema !== null) {
+            throw new InvalidArgumentException(
+                'Cannot specify both "resource" and "schema". Use resource for resource objects ' .
+                'or schema for custom return types, but not both.'
+            );
+        }
+
+        // At least one must be specified
+        if ($this->resource === null && $this->schema === null) {
+            throw new InvalidArgumentException(
+                'Must specify either "resource" or "schema" to define return type'
+            );
+        }
+
+        // Validate resource name format if provided
+        if ($this->resource !== null) {
+            if (!preg_match('/^[a-z][a-z0-9_]*$/', $this->resource)) {
+                throw new InvalidArgumentException(
+                    "Invalid resource name: '{$this->resource}'. Must be snake_case lowercase (e.g., 'user', 'order_item')"
+                );
+            }
+        }
+
+        // Validate JSON Schema structure if provided
+        if ($this->schema !== null) {
+            $this->validateJsonSchema($this->schema);
+        }
+    }
+
+    /**
+     * Validate JSON Schema structure.
+     *
+     * @param array<string, mixed> $schema
+     * @throws InvalidArgumentException
+     */
+    private function validateJsonSchema(array $schema): void
+    {
+        if (!isset($schema['type']) && !isset($schema['$ref'])) {
+            throw new InvalidArgumentException(
+                'JSON Schema must include "type" or "$ref" property'
+            );
+        }
+
+        if (isset($schema['type'])) {
+            $validTypes = ['null', 'boolean', 'object', 'array', 'number', 'string', 'integer'];
+            if (!in_array($schema['type'], $validTypes, true)) {
+                throw new InvalidArgumentException(
+                    "Invalid JSON Schema type: '{$schema['type']}'"
+                );
+            }
+        }
+    }
 }

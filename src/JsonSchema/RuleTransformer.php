@@ -62,6 +62,18 @@ final class RuleTransformer
      */
     public static function transform(string $field, array $rules): array
     {
+        if (trim($field) === '') {
+            throw new \InvalidArgumentException('Field name cannot be empty');
+        }
+
+        foreach ($rules as $rule) {
+            if (!is_string($rule) && !is_object($rule)) {
+                throw new \InvalidArgumentException(
+                    sprintf('Rule must be string or object, %s given', get_debug_type($rule)),
+                );
+            }
+        }
+
         $fieldSchema = [];
 
         foreach ($rules as $rule) {

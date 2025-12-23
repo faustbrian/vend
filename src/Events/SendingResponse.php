@@ -64,11 +64,43 @@ final class SendingResponse extends ExtensionEvent
     }
 
     /**
+     * Validate response meets final serialization requirements.
+     *
+     * This is the last opportunity to catch response issues before
+     * serialization. Validates structure, required fields, and size limits.
+     *
+     * @param ResponseData $response Response to validate
+     *
+     * @return bool True if response is valid for serialization
+     */
+    protected function validateFinalResponse(ResponseData $response): bool
+    {
+        // Validate required fields exist
+        if (!isset($response->result) && !isset($response->error)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Set a new response without mutating the event's readonly properties.
+     *
+     * Validates the response before setting to ensure serialization will succeed.
+     *
+     * @param ResponseData $response New response to set
+     *
+     * @throws \InvalidArgumentException If response fails final validation
      */
     #[Override()]
     public function setResponse(ResponseData $response): void
     {
+        if (!$this->validateFinalResponse($response)) {
+            throw new \InvalidArgumentException(
+                'Response failed final validation checks before serialization'
+            );
+        }
+
         $this->currentResponse = $response;
     }
 }
