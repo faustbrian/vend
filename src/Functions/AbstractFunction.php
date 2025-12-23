@@ -301,16 +301,15 @@ abstract class AbstractFunction implements FunctionInterface
      *
      * Reads from the #[Descriptor] attribute if present, otherwise returns null.
      *
-     * @return null|array<int, array<string, mixed>|ExampleData> Examples or null
+     * @return null|list<ExampleData> Examples or null
      */
     #[Override()]
     public function getExamples(): ?array
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getExamples();
-        }
-
-        return null;
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getExamples(),
+            null,
+        );
     }
 
     /**
