@@ -219,4 +219,70 @@ enum ReplayStatus: string
             default => [],
         };
     }
+
+    /**
+     * Check if this status represents a successful outcome.
+     *
+     * Success states indicate the replay executed without errors and
+     * produced a valid result. Includes both completed and processed
+     * terminal states.
+     *
+     * @return bool True if the replay succeeded, false otherwise
+     */
+    public function isSuccess(): bool
+    {
+        return match ($this) {
+            self::Completed, self::Processed => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Check if this status represents a failed outcome.
+     *
+     * Failed states indicate the replay encountered an error during
+     * execution or was unable to complete for other reasons.
+     *
+     * @return bool True if the replay failed or was cancelled/expired
+     */
+    public function isFailure(): bool
+    {
+        return match ($this) {
+            self::Failed, self::Cancelled, self::Expired => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Check if this status represents an active (non-terminal) state.
+     *
+     * Active states are replays that are still in progress or waiting
+     * to be processed. These replays have not reached a final outcome.
+     *
+     * @return bool True if replay is active (queued or processing)
+     */
+    public function isActive(): bool
+    {
+        return !$this->isTerminal();
+    }
+
+    /**
+     * Check if this status indicates the replay is currently executing.
+     *
+     * @return bool True if replay is being processed right now
+     */
+    public function isProcessing(): bool
+    {
+        return $this === self::Processing;
+    }
+
+    /**
+     * Check if this status indicates the replay is waiting to execute.
+     *
+     * @return bool True if replay is queued but not yet started
+     */
+    public function isQueued(): bool
+    {
+        return $this === self::Queued;
+    }
 }
