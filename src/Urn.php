@@ -109,6 +109,11 @@ final class Urn
      */
     public static function parse(string $urn): array
     {
+        // Prevent ReDoS attacks
+        if (strlen($urn) > 255) {
+            throw InvalidUrnFormatException::create($urn);
+        }
+
         // Extension-provided function: urn:vendor:forrst:ext:extension-name:fn:function-name
         if (preg_match('/^urn:([a-z][a-z0-9-]*):forrst:ext:([a-z][a-z0-9-]*):fn:(.+)$/', $urn, $matches)) {
             return [
@@ -140,6 +145,11 @@ final class Urn
      */
     public static function isValid(string $urn): bool
     {
+        // Prevent ReDoS attacks
+        if (strlen($urn) > 255) {
+            return false;
+        }
+
         return (bool) preg_match('/^urn:[a-z][a-z0-9-]*:forrst:(ext|fn)(:[a-z][a-z0-9-]*)+$/', $urn);
     }
 
@@ -152,6 +162,11 @@ final class Urn
      */
     public static function isCore(string $urn): bool
     {
+        // Add length check for consistency
+        if (strlen($urn) > 255) {
+            return false;
+        }
+
         return str_contains($urn, 'urn:'.self::VENDOR.':');
     }
 
