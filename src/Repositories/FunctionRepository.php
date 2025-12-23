@@ -10,6 +10,8 @@
 namespace Cline\Forrst\Repositories;
 
 use Cline\Forrst\Contracts\FunctionInterface;
+use Cline\Forrst\Discovery\ArgumentData;
+use Cline\Forrst\Discovery\ErrorDefinitionData;
 use Cline\Forrst\Exceptions\ExactVersionNotFoundException;
 use Cline\Forrst\Exceptions\FunctionAlreadyRegisteredException;
 use Cline\Forrst\Exceptions\FunctionNotFoundException;
@@ -17,6 +19,7 @@ use Cline\Forrst\Exceptions\ReservedNamespaceException;
 use Cline\Forrst\Exceptions\StabilityVersionNotFoundException;
 use Cline\Forrst\Exceptions\VersionNotFoundException;
 use Cline\Forrst\Rules\SemanticVersion;
+use Cline\Forrst\Urn;
 use Illuminate\Support\Facades\App;
 
 use function array_filter;
@@ -214,6 +217,76 @@ final class FunctionRepository
         }
 
         $this->versionIndex[$name][] = $version;
+    }
+
+    /**
+     * Validates a function's metadata for type safety and format compliance.
+     *
+     * Performs runtime validation to ensure function metadata adheres to
+     * expected types and formats. Should be called during registration or
+     * discovery generation to catch configuration errors early.
+     *
+     * @param FunctionInterface $function Function instance to validate
+     *
+     * @throws \InvalidArgumentException When validation fails
+     */
+    public function validateFunction(FunctionInterface $function): void
+    {
+        // Validate URN format
+        if (!Urn::isValid($function->getUrn())) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid function URN: %s', $function->getUrn())
+            );
+        }
+
+        // Validate semantic version format
+        if (!preg_match('/^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/', $function->getVersion())) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid semantic version: %s', $function->getVersion())
+            );
+        }
+
+        // Validate arguments are ArgumentData instances or arrays
+        foreach ($function->getArguments() as $index => $argument) {
+            if (!$argument instanceof ArgumentData && !is_array($argument)) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'Argument at index %d must be ArgumentData or array, %s given',
+                        $index,
+                        get_debug_type($argument)
+                    )
+                );
+            }
+        }
+
+        // Validate errors are ErrorDefinitionData instances or arrays
+        foreach ($function->getErrors() as $index => $error) {
+            if (!$error instanceof ErrorDefinitionData && !is_array($error)) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'Error at index %d must be ErrorDefinitionData or array, %s given',
+                        $index,
+                        get_debug_type($error)
+                    )
+                );
+            }
+        }
+
+        // Validate side effects are valid strings
+        if ($function->getSideEffects() !== null) {
+            $validSideEffects = ['create', 'update', 'delete'];
+            foreach ($function->getSideEffects() as $sideEffect) {
+                if (!in_array($sideEffect, $validSideEffects, true)) {
+                    throw new \InvalidArgumentException(
+                        sprintf(
+                            'Invalid side effect "%s". Must be one of: %s',
+                            $sideEffect,
+                            implode(', ', $validSideEffects)
+                        )
+                    );
+                }
+            }
+        }
     }
 
     /**
