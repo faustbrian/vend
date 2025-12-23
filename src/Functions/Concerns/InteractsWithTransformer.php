@@ -39,6 +39,37 @@ use Illuminate\Support\Collection;
 trait InteractsWithTransformer
 {
     /**
+     * Get transformer configuration options.
+     *
+     * Override this method to customize transformation behavior for all methods
+     * in this trait. Configuration options are passed to the Transformer instance
+     * during creation, enabling fine-grained control over transformation output.
+     *
+     * Available options:
+     * - include_meta: Include metadata in responses (default: true)
+     * - include_links: Include navigation links (default: true)
+     * - sparse_fieldsets: Enable field selection via request parameters (default: true)
+     * - relationship_loading: Control eager loading strategy (default: 'auto')
+     *
+     * Example usage:
+     * ```php
+     * protected function getTransformerOptions(): array
+     * {
+     *     return [
+     *         'include_meta' => false,
+     *         'sparse_fieldsets' => true,
+     *     ];
+     * }
+     * ```
+     *
+     * @return array<string, mixed> Configuration options for the Transformer
+     */
+    protected function getTransformerOptions(): array
+    {
+        return [];
+    }
+
+    /**
      * Transform a single model or resource into a Forrst document.
      *
      * Converts an Eloquent model or ResourceInterface instance into a JSON API-compliant
@@ -50,7 +81,7 @@ trait InteractsWithTransformer
      */
     protected function item(ResourceInterface|Model $item): DocumentData
     {
-        return Transformer::create($this->requestObject)->item($item);
+        return Transformer::create($this->requestObject, $this->getTransformerOptions())->item($item);
     }
 
     /**
@@ -65,7 +96,7 @@ trait InteractsWithTransformer
      */
     protected function collection(Collection $collection): DocumentData
     {
-        return Transformer::create($this->requestObject)->collection($collection);
+        return Transformer::create($this->requestObject, $this->getTransformerOptions())->collection($collection);
     }
 
     /**
@@ -81,7 +112,7 @@ trait InteractsWithTransformer
      */
     protected function cursorPaginate(QueryBuilder|Builder $query): DocumentData
     {
-        return Transformer::create($this->requestObject)->cursorPaginate($query);
+        return Transformer::create($this->requestObject, $this->getTransformerOptions())->cursorPaginate($query);
     }
 
     /**
@@ -96,7 +127,7 @@ trait InteractsWithTransformer
      */
     protected function paginate(QueryBuilder|Builder $query): DocumentData
     {
-        return Transformer::create($this->requestObject)->paginate($query);
+        return Transformer::create($this->requestObject, $this->getTransformerOptions())->paginate($query);
     }
 
     /**
@@ -111,6 +142,6 @@ trait InteractsWithTransformer
      */
     protected function simplePaginate(QueryBuilder|Builder $query): DocumentData
     {
-        return Transformer::create($this->requestObject)->simplePaginate($query);
+        return Transformer::create($this->requestObject, $this->getTransformerOptions())->simplePaginate($query);
     }
 }

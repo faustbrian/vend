@@ -24,9 +24,15 @@ use Cline\Forrst\QueryBuilders\QueryBuilder;
  * the current request object for automatic extraction of filter, sort, fields, and
  * include parameters. This enables standardized query building across all functions.
  *
+ * **Requirements:**
+ * - Host class must have RequestObjectData $requestObject property
+ * - Host class must call setRequest() before using query()
+ * - Resource classes must implement ResourceInterface
+ * - Resource classes must have static query(RequestObjectData): QueryBuilder method
+ *
  * @author Brian Faust <brian@cline.sh>
  *
- * @property RequestObjectData $requestObject The current Forrst request object
+ * @property RequestObjectData $requestObject The current Forrst request object (required)
  *
  * @see https://docs.cline.sh/forrst/extensions/query
  */
@@ -41,9 +47,37 @@ trait InteractsWithQueryBuilder
      *
      * @param  class-string<ResourceInterface> $class The resource class to query
      * @return QueryBuilder                    QueryBuilder instance with request parameters applied
+     *
+     * @throws \InvalidArgumentException If the class does not exist or does not implement ResourceInterface
+     * @throws \BadMethodCallException   If the class does not have a static query() method
      */
     protected function query(string $class): QueryBuilder
     {
+        if (!class_exists($class)) {
+            throw new \InvalidArgumentException(
+                sprintf('Resource class "%s" does not exist', $class),
+            );
+        }
+
+        if (!method_exists($class, 'query')) {
+            throw new \BadMethodCallException(
+                sprintf(
+                    'Resource class "%s" must implement static query() method',
+                    $class,
+                ),
+            );
+        }
+
+        if (!is_subclass_of($class, ResourceInterface::class)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Class "%s" must implement %s',
+                    $class,
+                    ResourceInterface::class,
+                ),
+            );
+        }
+
         // @phpstan-ignore-next-line staticMethod.notFound, return.type - query() is defined on AbstractResource
         return $class::query($this->requestObject);
     }
