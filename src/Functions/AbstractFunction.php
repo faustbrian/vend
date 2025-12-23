@@ -242,11 +242,10 @@ abstract class AbstractFunction implements FunctionInterface
     #[Override()]
     public function getQuery(): ?QueryCapabilitiesData
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getQuery();
-        }
-
-        return null;
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getQuery(),
+            null,
+        );
     }
 
     /**
