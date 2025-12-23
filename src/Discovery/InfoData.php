@@ -50,7 +50,7 @@ final class InfoData extends Data
      */
     public function __construct(
         string $title,
-        public readonly string $version,
+        string $version,
         public readonly ?string $description = null,
         public readonly ?string $termsOfService = null,
         public readonly ?ContactData $contact = null,
@@ -69,7 +69,22 @@ final class InfoData extends Data
         }
 
         $this->title = $trimmedTitle;
+
+        // Validate semantic version
+        $semverPattern = '/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)' .
+            '(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)' .
+            '(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?'  .
+            '(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/';
+
+        if (!preg_match($semverPattern, $version)) {
+            throw new InvalidArgumentException(
+                "Invalid semantic version: '{$version}'. Must follow semver format (e.g., '2.1.0')"
+            );
+        }
+
+        $this->version = $version;
     }
 
     public readonly string $title;
+    public readonly string $version;
 }
