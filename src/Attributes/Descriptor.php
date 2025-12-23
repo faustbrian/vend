@@ -33,6 +33,8 @@ use Cline\Forrst\Contracts\DescriptorInterface;
  * }
  * ```
  * @psalm-immutable
+ *
+ * @see DescriptorInterface
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class Descriptor
