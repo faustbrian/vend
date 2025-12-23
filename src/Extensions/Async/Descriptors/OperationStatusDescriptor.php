@@ -63,6 +63,8 @@ final class OperationStatusDescriptor implements DescriptorInterface
                         ],
                         'progress' => [
                             'type' => 'number',
+                            'minimum' => 0.0,
+                            'maximum' => 1.0,
                             'description' => 'Progress percentage (0-1)',
                         ],
                         'result' => [
