@@ -9,6 +9,7 @@
 
 namespace Cline\Forrst\Discovery;
 
+use InvalidArgumentException;
 use Spatie\LaravelData\Data;
 
 /**
@@ -48,11 +49,27 @@ final class InfoData extends Data
      *                                         commercial use restrictions and attribution requirements.
      */
     public function __construct(
-        public readonly string $title,
+        string $title,
         public readonly string $version,
         public readonly ?string $description = null,
         public readonly ?string $termsOfService = null,
         public readonly ?ContactData $contact = null,
         public readonly ?LicenseData $license = null,
-    ) {}
+    ) {
+        // Validate title
+        $trimmedTitle = trim($title);
+        if ($trimmedTitle === '') {
+            throw new InvalidArgumentException('Service title cannot be empty');
+        }
+
+        if (mb_strlen($trimmedTitle) > 200) {
+            throw new InvalidArgumentException(
+                'Service title too long (max 200 characters, got ' . mb_strlen($trimmedTitle) . ')'
+            );
+        }
+
+        $this->title = $trimmedTitle;
+    }
+
+    public readonly string $title;
 }
