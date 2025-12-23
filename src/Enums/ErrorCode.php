@@ -450,6 +450,27 @@ enum ErrorCode: string
     }
 
     /**
+     * Create a standardized error response array.
+     *
+     * Generates a consistent error response structure matching the Forrst
+     * protocol specification. Includes the error code, HTTP status, and
+     * optional message and metadata.
+     *
+     * @param string $message Human-readable error message
+     * @param array<string, mixed> $metadata Additional error context/metadata
+     * @return array{code: string, status: int, message: string, metadata: array<string, mixed>}
+     */
+    public function toErrorResponse(string $message, array $metadata = []): array
+    {
+        return [
+            'code' => $this->value,
+            'status' => $this->toStatusCode(),
+            'message' => $message,
+            'metadata' => $metadata,
+        ];
+    }
+
+    /**
      * Convert the error code to an HTTP status code.
      *
      * Maps protocol error codes to their corresponding HTTP status codes for
