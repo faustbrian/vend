@@ -63,11 +63,15 @@ if (!function_exists('post_forrst') && function_exists('Pest\Laravel\postJson'))
         ?string $version = null,
         ?string $id = null,
     ): TestResponse {
+        if ($id === null) {
+            $id = (string) \Illuminate\Support\Str::ulid();
+        }
+
         return postJson(
             route('rpc'),
             array_filter([
                 'protocol' => ProtocolData::forrst()->toArray(),
-                'id' => $id ?? '01J34641TE5SF58ZX3N9HPT1BA',
+                'id' => $id,
                 'call' => array_filter([
                     'function' => $function,
                     'version' => $version,
