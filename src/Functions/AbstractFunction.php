@@ -110,10 +110,22 @@ abstract class AbstractFunction implements FunctionInterface
         return $this->fromDescriptorOr(
             fn (FunctionDescriptor $d) => $d->getUrn(),
             function (): string {
-                /** @var string $vendor */
                 $vendor = config('rpc.vendor', 'app');
+
+                if (! \is_string($vendor)) {
+                    throw new \InvalidArgumentException(
+                        'Configuration key "rpc.vendor" must be a string, '.\gettype($vendor).' provided',
+                    );
+                }
+
                 $name = Str::kebab(class_basename(static::class));
-                $name = (string) preg_replace('/-function$/', '', $name);
+                $name = preg_replace('/-function$/', '', $name);
+
+                if ($name === null) {
+                    throw new \RuntimeException(
+                        'Failed to process function name via regex for class '.static::class,
+                    );
+                }
 
                 return "urn:{$vendor}:forrst:fn:{$name}";
             },
