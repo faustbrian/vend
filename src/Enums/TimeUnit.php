@@ -64,14 +64,44 @@ enum TimeUnit: string
      * @param int $value Duration value in the current time unit (must be non-negative)
      *
      * @return int Duration in seconds (1 minute = 60s, 1 hour = 3600s, 1 day = 86400s)
+     *
+     * @throws \InvalidArgumentException If value is negative or would cause integer overflow
      */
     public function toSeconds(int $value): int
     {
-        return match ($this) {
-            self::Second => $value,
-            self::Minute => $value * 60,
-            self::Hour => $value * 3_600,
-            self::Day => $value * 86_400,
+        // Validate non-negative constraint
+        if ($value < 0) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Duration value must be non-negative, got %d %s',
+                    $value,
+                    $this->value
+                )
+            );
+        }
+
+        // Check for potential overflow before multiplication
+        $multiplier = match ($this) {
+            self::Second => 1,
+            self::Minute => 60,
+            self::Hour => 3_600,
+            self::Day => 86_400,
         };
+
+        // PHP_INT_MAX / multiplier gives the maximum safe value before overflow
+        $maxSafeValue = (int) floor(PHP_INT_MAX / $multiplier);
+
+        if ($value > $maxSafeValue) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Duration value %d %s would cause integer overflow (max: %d)',
+                    $value,
+                    $this->value,
+                    $maxSafeValue
+                )
+            );
+        }
+
+        return $value * $multiplier;
     }
 }
