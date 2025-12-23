@@ -59,6 +59,7 @@ final class ServerData extends AbstractData
         public readonly ?array $functions,
     ) {
         self::validatePath($this->path);
+        self::validateRoute($this->route);
     }
 
     /**
@@ -102,6 +103,31 @@ final class ServerData extends AbstractData
                     sprintf('Path is outside application root: "%s"', $path),
                 );
             }
+        }
+    }
+
+    /**
+     * Validate the route format.
+     *
+     * Ensures the route starts with a forward slash and contains only
+     * valid route characters (alphanumeric, hyphens, slashes, braces, asterisks).
+     *
+     * @param string $route The route to validate
+     *
+     * @throws \InvalidArgumentException If route format is invalid
+     */
+    private static function validateRoute(string $route): void
+    {
+        if (!str_starts_with($route, '/')) {
+            throw new \InvalidArgumentException(
+                sprintf('Route "%s" must start with "/"', $route),
+            );
+        }
+
+        if (!preg_match('#^/[\w\-/{}\*]+$#', $route)) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid route format: "%s"', $route),
+            );
         }
     }
 }

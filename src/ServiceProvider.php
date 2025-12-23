@@ -151,6 +151,10 @@ final class ServiceProvider extends PackageServiceProvider
      * invalid configuration in console environments to prevent installation errors
      * before configuration is published.
      *
+     * SECURITY: The rpc configuration file is trusted and should only be
+     * modified by developers/administrators. Never populate configuration
+     * from user input or untrusted sources.
+     *
      * @throws Throwable Configuration validation errors in non-console environments
      */
     #[Override()]
