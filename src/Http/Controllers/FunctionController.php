@@ -89,7 +89,23 @@ final readonly class FunctionController
      */
     public function __invoke(Request $request, RequestHandler $requestHandler): JsonResponse|StreamedResponse
     {
-        $result = $requestHandler->handle($request->getContent());
+        $content = $request->getContent();
+
+        // Validate request has content
+        if (empty($content)) {
+            return Response::json([
+                'protocol' => ['name' => 'forrst', 'version' => '1.0.0'],
+                'id' => null,
+                'errors' => [[
+                    'status' => '400',
+                    'code' => 'empty_request',
+                    'title' => 'Empty request body',
+                    'detail' => 'Request body cannot be empty. Expected JSON-encoded Forrst request.',
+                ]],
+            ], 200); // Still 200 per Forrst spec
+        }
+
+        $result = $requestHandler->handle($content);
 
         // Check if streaming was requested and enabled
         $streamContext = StreamExtension::getContext();
