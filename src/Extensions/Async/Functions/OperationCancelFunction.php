@@ -18,6 +18,8 @@ use Cline\Forrst\Exceptions\OperationCannotCancelException;
 use Cline\Forrst\Exceptions\OperationNotFoundException;
 use Cline\Forrst\Extensions\Async\Descriptors\OperationCancelDescriptor;
 use Cline\Forrst\Functions\AbstractFunction;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 use function assert;
 use function is_string;
@@ -38,9 +40,11 @@ final class OperationCancelFunction extends AbstractFunction
      * Create a new operation cancel function instance.
      *
      * @param OperationRepositoryInterface $repository Operation repository
+     * @param LoggerInterface              $logger     Logger for recording operations
      */
     public function __construct(
         private readonly OperationRepositoryInterface $repository,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {}
 
     /**
@@ -64,10 +68,19 @@ final class OperationCancelFunction extends AbstractFunction
         $operation = $this->repository->find($operationId);
 
         if (!$operation instanceof OperationData) {
+            $this->logger->warning('Operation not found for cancellation', [
+                'operation_id' => $operationId,
+            ]);
+
             throw OperationNotFoundException::create($operationId);
         }
 
         if ($operation->isTerminal()) {
+            $this->logger->info('Cannot cancel terminal operation', [
+                'operation_id' => $operationId,
+                'status' => $operation->status->value,
+            ]);
+
             throw OperationCannotCancelException::create($operationId, $operation->status);
         }
 
@@ -87,6 +100,11 @@ final class OperationCancelFunction extends AbstractFunction
         );
 
         $this->repository->save($cancelledOperation);
+
+        $this->logger->info('Operation cancelled successfully', [
+            'operation_id' => $operationId,
+            'function' => $operation->function,
+        ]);
 
         return [
             'operation_id' => $operationId,
