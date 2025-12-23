@@ -104,6 +104,22 @@ final class IdempotencyExtension extends AbstractExtension
     ) {}
 
     /**
+     * Release lock on destruction if context exists.
+     *
+     * Safeguard to ensure locks are released even if the normal flow is interrupted.
+     * The lock has a TTL so it will expire anyway, but this prevents unnecessary waiting.
+     */
+    public function __destruct()
+    {
+        if ($this->context !== null && isset($this->context['lock'])) {
+            $lock = $this->context['lock'];
+            if ($lock instanceof Lock) {
+                $lock->release();
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     #[Override()]
