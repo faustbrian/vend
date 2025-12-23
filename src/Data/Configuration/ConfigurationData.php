@@ -61,7 +61,9 @@ final class ConfigurationData extends AbstractData
         public readonly array $resources,
         #[DataCollectionOf(ServerData::class)]
         public readonly DataCollection $servers,
-    ) {}
+    ) {
+        $this->validate();
+    }
 
     /**
      * Create configuration from array data.

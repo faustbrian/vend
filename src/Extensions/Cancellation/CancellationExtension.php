@@ -130,8 +130,23 @@ final class CancellationExtension extends AbstractExtension implements ProvidesF
             return;
         }
 
+        try {
+            $validToken = $this->validateToken($token);
+        } catch (\InvalidArgumentException $e) {
+            $event->setResponse(ResponseData::error(
+                new ErrorData(
+                    code: ErrorCode::InvalidArguments,
+                    message: $e->getMessage(),
+                ),
+                $event->request->id,
+            ));
+            $event->stopPropagation();
+
+            return;
+        }
+
         // Register the token as active (not cancelled)
-        Cache::put(self::CACHE_PREFIX.$token, 'active', $this->tokenTtl);
+        Cache::put(self::CACHE_PREFIX.$validToken, 'active', $this->tokenTtl);
     }
 
     /**

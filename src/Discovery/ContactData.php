@@ -35,10 +35,127 @@ final class ContactData extends Data
      * @param null|string $email The email address for contacting the API team or responsible individual.
      *                           Used for support inquiries, bug reports, and general communication.
      *                           Should be a monitored email address.
+     *
+     * @throws \InvalidArgumentException if validation fails
      */
     public function __construct(
         public readonly ?string $name = null,
         public readonly ?string $url = null,
         public readonly ?string $email = null,
-    ) {}
+    ) {
+        $this->validate();
+    }
+
+    /**
+     * Validate contact information fields.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validate(): void
+    {
+        if ($this->name !== null) {
+            $this->validateName();
+        }
+
+        if ($this->url !== null) {
+            $this->validateUrl();
+        }
+
+        if ($this->email !== null) {
+            $this->validateEmail();
+        }
+
+        $this->validateAtLeastOneFieldPresent();
+    }
+
+    /**
+     * Validate the name field.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateName(): void
+    {
+        $trimmedName = trim($this->name);
+
+        if ($trimmedName === '') {
+            throw new \InvalidArgumentException('Contact name cannot be empty or whitespace only');
+        }
+
+        if (mb_strlen($trimmedName) > 255) {
+            throw new \InvalidArgumentException(
+                sprintf('Contact name cannot exceed 255 characters, got %d', mb_strlen($trimmedName)),
+            );
+        }
+
+        // Prevent HTML/script injection
+        if ($trimmedName !== strip_tags($trimmedName)) {
+            throw new \InvalidArgumentException('Contact name cannot contain HTML tags');
+        }
+    }
+
+    /**
+     * Validate the URL field.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateUrl(): void
+    {
+        if (!filter_var($this->url, FILTER_VALIDATE_URL)) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid contact URL format: %s', $this->url),
+            );
+        }
+
+        $parsedUrl = parse_url($this->url);
+
+        if (!isset($parsedUrl['scheme']) || !\in_array($parsedUrl['scheme'], ['http', 'https'], true)) {
+            throw new \InvalidArgumentException(
+                sprintf('Contact URL must use HTTP or HTTPS protocol, got: %s', $parsedUrl['scheme'] ?? 'none'),
+            );
+        }
+
+        // Prevent javascript: and data: URLs
+        $scheme = strtolower($parsedUrl['scheme']);
+
+        if (\in_array($scheme, ['javascript', 'data', 'vbscript', 'file'], true)) {
+            throw new \InvalidArgumentException(
+                sprintf('Contact URL scheme "%s" is not allowed for security reasons', $scheme),
+            );
+        }
+    }
+
+    /**
+     * Validate the email field.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateEmail(): void
+    {
+        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid email address format: %s', $this->email),
+            );
+        }
+
+        // Additional RFC 5322 validation
+        if (mb_strlen($this->email) > 254) {
+            throw new \InvalidArgumentException(
+                sprintf('Email address cannot exceed 254 characters, got %d', mb_strlen($this->email)),
+            );
+        }
+    }
+
+    /**
+     * Validate that at least one contact method is provided.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateAtLeastOneFieldPresent(): void
+    {
+        if ($this->name === null && $this->url === null && $this->email === null) {
+            throw new \InvalidArgumentException(
+                'ContactData requires at least one field (name, url, or email) to be provided',
+            );
+        }
+    }
 }

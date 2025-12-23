@@ -137,6 +137,7 @@ final readonly class CallFunction
 
         $parameters = new ReflectionClass($function)->getMethod('handle')->getParameters();
         $parametersMapped = [];
+        $resolutionErrors = [];
 
         foreach ($parameters as $parameter) {
             $parameterName = $parameter->getName();
@@ -146,33 +147,75 @@ final readonly class CallFunction
                 continue;
             }
 
-            $parameterType = $parameter->getType();
+            try {
+                $value = $this->resolveParameter($parameter, $arguments);
 
-            if ($parameterType instanceof ReflectionNamedType) {
-                $parameterType = $parameterType->getName();
-            }
-
-            $parameterValue = Arr::get($arguments, $parameterName) ?? Arr::get($arguments, Str::snake($parameterName, '.'));
-
-            if (is_subclass_of((string) $parameterType, Data::class)) {
-                try {
-                    $payload = $parameter->getName() === 'data' ? $arguments : $parameterValue;
-                    assert(is_array($payload));
-
-                    $parametersMapped[$parameterName] = call_user_func(
-                        [(string) $parameterType, 'validateAndCreate'],
-                        $payload,
+                if ($value !== null || $parameter->allowsNull()) {
+                    $parametersMapped[$parameterName] = $value;
+                } elseif (!$parameter->isOptional()) {
+                    // Required parameter resolved to null
+                    $resolutionErrors[] = sprintf(
+                        'Required parameter "%s" could not be resolved',
+                        $parameterName,
                     );
-                } catch (ValidationException $exception) {
-                    throw InvalidDataException::create($exception);
                 }
-            } elseif ($parameterType === 'array' && $parameter->getName() === 'data') {
-                $parametersMapped[$parameterName] = $arguments;
-            } else {
-                $parametersMapped[$parameterName] = $parameterValue;
+            } catch (Throwable $e) {
+                $resolutionErrors[] = sprintf(
+                    'Failed to resolve parameter "%s": %s',
+                    $parameterName,
+                    $e->getMessage(),
+                );
             }
         }
 
-        return array_filter($parametersMapped);
+        if (count($resolutionErrors) > 0) {
+            throw new \InvalidArgumentException(
+                'Parameter resolution failed: '.implode('; ', $resolutionErrors),
+            );
+        }
+
+        return $parametersMapped;
+    }
+
+    /**
+     * Resolve a single parameter from the request arguments.
+     *
+     * @param \ReflectionParameter $parameter The parameter to resolve
+     * @param array<string, mixed> $arguments The raw request arguments
+     *
+     * @throws InvalidDataException When Data object validation fails
+     *
+     * @return mixed The resolved parameter value
+     */
+    private function resolveParameter(\ReflectionParameter $parameter, array $arguments): mixed
+    {
+        $parameterName = $parameter->getName();
+        $parameterType = $parameter->getType();
+
+        if ($parameterType instanceof ReflectionNamedType) {
+            $parameterType = $parameterType->getName();
+        }
+
+        $parameterValue = Arr::get($arguments, $parameterName) ?? Arr::get($arguments, Str::snake($parameterName, '.'));
+
+        if (is_subclass_of((string) $parameterType, Data::class)) {
+            try {
+                $payload = $parameter->getName() === 'data' ? $arguments : $parameterValue;
+                assert(is_array($payload));
+
+                return call_user_func(
+                    [(string) $parameterType, 'validateAndCreate'],
+                    $payload,
+                );
+            } catch (ValidationException $exception) {
+                throw InvalidDataException::create($exception);
+            }
+        }
+
+        if ($parameterType === 'array' && $parameter->getName() === 'data') {
+            return $arguments;
+        }
+
+        return $parameterValue;
     }
 }

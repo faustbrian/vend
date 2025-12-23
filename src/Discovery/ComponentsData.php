@@ -100,4 +100,34 @@ final class ComponentsData extends Data
             default => false,
         };
     }
+
+    /**
+     * Resolve a component reference to its actual data.
+     *
+     * @param string $ref Component reference (e.g., "#/components/schemas/User")
+     *
+     * @return mixed The resolved component data
+     *
+     * @throws \InvalidArgumentException If reference doesn't exist
+     */
+    public function resolveReference(string $ref): mixed
+    {
+        if (!$this->hasReference($ref)) {
+            throw new \InvalidArgumentException("Component reference '{$ref}' does not exist");
+        }
+
+        $parts = \explode('/', \substr($ref, 13));
+        [$componentType, $componentName] = $parts;
+
+        return match ($componentType) {
+            'schemas' => $this->schemas[$componentName],
+            'contentDescriptors' => $this->contentDescriptors[$componentName],
+            'errors' => $this->errors[$componentName],
+            'examples' => $this->examples[$componentName],
+            'examplePairings' => $this->examplePairings[$componentName],
+            'links' => $this->links[$componentName],
+            'tags' => $this->tags[$componentName],
+            'resources' => $this->resources[$componentName],
+        };
+    }
 }
