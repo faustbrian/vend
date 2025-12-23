@@ -94,6 +94,7 @@ final class Urn
         self::validateName($functionName, 'function');
 
         $vendor ??= self::VENDOR;
+        self::validateVendor($vendor);
 
         return implode(':', [
             'urn',
@@ -189,6 +190,7 @@ final class Urn
     private static function build(string $type, string $name, ?string $vendor = null): string
     {
         $vendor ??= self::VENDOR;
+        self::validateVendor($vendor);
 
         return implode(':', ['urn', $vendor, self::PROTOCOL, $type, $name]);
     }
@@ -222,6 +224,33 @@ final class Urn
                     '%s name "%s" is invalid. Must start with a letter and contain only lowercase letters, numbers, hyphens, and colons',
                     ucfirst($type),
                     $name
+                )
+            );
+        }
+    }
+
+    /**
+     * Validate vendor format.
+     *
+     * @param string $vendor Vendor identifier
+     *
+     * @throws \InvalidArgumentException If vendor format is invalid
+     */
+    private static function validateVendor(string $vendor): void
+    {
+        if (empty($vendor)) {
+            throw new \InvalidArgumentException('Vendor cannot be empty');
+        }
+
+        if (strlen($vendor) > 50) {
+            throw new \InvalidArgumentException('Vendor cannot exceed 50 characters');
+        }
+
+        if (!preg_match('/^[a-z][a-z0-9-]*$/', $vendor)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Vendor "%s" is invalid. Must start with a letter and contain only lowercase letters, numbers, and hyphens',
+                    $vendor
                 )
             );
         }
