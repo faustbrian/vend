@@ -83,16 +83,29 @@ abstract class AbstractExtension implements ExtensionInterface
     }
 
     /**
+     * Get additional capability metadata.
+     *
+     * Subclasses can override this to provide documentation URLs, version info,
+     * or other metadata for inclusion in capability responses.
+     *
+     * @return array<string, mixed> Additional metadata
+     */
+    protected function getCapabilityMetadata(): array
+    {
+        return [];
+    }
+
+    /**
      * Export extension capabilities for discovery.
      *
      * Returns the extension's URN for inclusion in server capabilities responses.
-     * Subclasses can override to include additional metadata like documentation URLs.
+     * Subclasses can override getCapabilityMetadata() to include additional information.
      *
      * @return array{urn: string, documentation?: string} Capability information
      *
      * @throws \RuntimeException If URN is empty or has invalid format
      */
-    public function toCapabilities(): array
+    final public function toCapabilities(): array
     {
         $urn = $this->getUrn();
 
@@ -111,8 +124,9 @@ abstract class AbstractExtension implements ExtensionInterface
             ));
         }
 
-        return [
-            'urn' => $urn,
-        ];
+        return array_merge(
+            ['urn' => $urn],
+            $this->getCapabilityMetadata()
+        );
     }
 }

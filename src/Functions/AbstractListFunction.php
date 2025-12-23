@@ -53,7 +53,7 @@ abstract class AbstractListFunction extends AbstractFunction
      */
     public function handle(): DocumentData
     {
-        $query = $this->query($this->getResourceClass());
+        $query = $this->query($this->getValidatedResourceClass());
 
         return match ($this->getPaginationStrategy()) {
             'cursor' => $this->cursorPaginate($query),
@@ -67,6 +67,47 @@ abstract class AbstractListFunction extends AbstractFunction
                 ),
             ),
         };
+    }
+
+    /**
+     * Get and validate the resource class.
+     *
+     * Validates that the resource class returned by getResourceClass() exists and
+     * implements ResourceInterface. This provides early error detection with clear
+     * messages when subclasses misconfigure their resource class.
+     *
+     * @throws \InvalidArgumentException When resource class is invalid or doesn't implement ResourceInterface
+     *
+     * @return class-string<ResourceInterface> The validated resource class name
+     */
+    final protected function getValidatedResourceClass(): string
+    {
+        $resourceClass = $this->getResourceClass();
+
+        // Validate it's actually a class
+        if (!\class_exists($resourceClass)) {
+            throw new \InvalidArgumentException(
+                \sprintf(
+                    'Resource class "%s" does not exist in %s',
+                    $resourceClass,
+                    static::class,
+                ),
+            );
+        }
+
+        // Validate it implements ResourceInterface
+        if (!\is_subclass_of($resourceClass, ResourceInterface::class)) {
+            throw new \InvalidArgumentException(
+                \sprintf(
+                    'Resource class "%s" must implement %s in %s',
+                    $resourceClass,
+                    ResourceInterface::class,
+                    static::class,
+                ),
+            );
+        }
+
+        return $resourceClass;
     }
 
     /**

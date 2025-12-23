@@ -172,6 +172,28 @@ abstract class AbstractRequestException extends Exception implements RpcExceptio
     }
 
     /**
+     * Get contextual data for structured logging.
+     *
+     * Provides comprehensive error information formatted for logging systems.
+     * Includes error code, message, file location, retryability status, source
+     * information, and additional details for debugging and monitoring.
+     *
+     * @return array<string, mixed> Structured logging context with all relevant error data
+     */
+    public function getLogContext(): array
+    {
+        return [
+            'error_code' => $this->getErrorCode(),
+            'error_message' => $this->getErrorMessage(),
+            'file' => $this->getFile(),
+            'line' => $this->getLine(),
+            'retryable' => $this->isRetryable(),
+            'source' => $this->error->source?->toArray(),
+            'details' => $this->error->details,
+        ];
+    }
+
+    /**
      * Create a new exception instance with error details.
      *
      * Factory method for constructing exception instances with standardized error data.

@@ -258,11 +258,10 @@ abstract class AbstractFunction implements FunctionInterface
     #[Override()]
     public function getDeprecated(): ?DeprecatedData
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getDeprecated();
-        }
-
-        return null;
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getDeprecated(),
+            null,
+        );
     }
 
     /**
@@ -270,16 +269,15 @@ abstract class AbstractFunction implements FunctionInterface
      *
      * Reads from the #[Descriptor] attribute if present, otherwise returns null (read-only).
      *
-     * @return null|array<int, string> Side effects or null
+     * @return null|list<string> Side effects or null
      */
     #[Override()]
     public function getSideEffects(): ?array
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getSideEffects();
-        }
-
-        return null;
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getSideEffects(),
+            null,
+        );
     }
 
     /**
@@ -292,11 +290,10 @@ abstract class AbstractFunction implements FunctionInterface
     #[Override()]
     public function isDiscoverable(): bool
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->isDiscoverable();
-        }
-
-        return true;
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->isDiscoverable(),
+            true,
+        );
     }
 
     /**
