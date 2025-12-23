@@ -10,6 +10,7 @@
 namespace Cline\Forrst\Discovery;
 
 use Cline\Forrst\Discovery\Query\QueryCapabilitiesData;
+use InvalidArgumentException;
 use Spatie\LaravelData\Data;
 
 /**
@@ -120,5 +121,91 @@ final class FunctionDescriptorData extends Data
         public readonly ?array $links = null,
         public readonly ?ExternalDocsData $externalDocs = null,
         public readonly ?FunctionExtensionsData $extensions = null,
-    ) {}
+    ) {
+        // Validate name (URN format)
+        if (trim($name) === '') {
+            throw new InvalidArgumentException('Function name cannot be empty');
+        }
+
+        if (!preg_match('/^urn:[a-z][a-z0-9-]*:forrst:fn:[a-z][a-z0-9:.]*$/i', $name)) {
+            throw new InvalidArgumentException(
+                "Invalid function URN: '{$name}'. Expected format: 'urn:namespace:forrst:fn:function:name'"
+            );
+        }
+
+        // Validate semantic version
+        $semverPattern = '/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)' .
+            '(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)' .
+            '(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?'  .
+            '(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/';
+
+        if (!preg_match($semverPattern, $version)) {
+            throw new InvalidArgumentException(
+                "Invalid semantic version: '{$version}'. Must follow semver format (e.g., '1.0.0')"
+            );
+        }
+
+        // Validate arguments array type
+        foreach ($arguments as $index => $argument) {
+            if (!$argument instanceof ArgumentData) {
+                throw new InvalidArgumentException(
+                    "Argument at index {$index} must be instanceof ArgumentData"
+                );
+            }
+        }
+
+        // Validate mutually exclusive fields
+        $this->validateArrayTypes();
+    }
+
+    /**
+     * Validate array field types.
+     */
+    private function validateArrayTypes(): void
+    {
+        // tags arrays must contain proper types
+        if ($this->tags !== null) {
+            foreach ($this->tags as $index => $tag) {
+                if (!\is_array($tag) && !$tag instanceof TagData) {
+                    throw new InvalidArgumentException(
+                        "Tag at index {$index} must be array or TagData instance"
+                    );
+                }
+            }
+        }
+
+        // errors arrays must contain proper types
+        if ($this->errors !== null) {
+            foreach ($this->errors as $index => $error) {
+                if (!\is_array($error) && !$error instanceof ErrorDefinitionData) {
+                    throw new InvalidArgumentException(
+                        "Error at index {$index} must be array or ErrorDefinitionData instance"
+                    );
+                }
+            }
+        }
+
+        // links arrays must contain proper types
+        if ($this->links !== null) {
+            foreach ($this->links as $index => $link) {
+                if (!\is_array($link) && !$link instanceof LinkData) {
+                    throw new InvalidArgumentException(
+                        "Link at index {$index} must be array or LinkData instance"
+                    );
+                }
+            }
+        }
+
+        // sideEffects must use standard values
+        if ($this->sideEffects !== null) {
+            $validEffects = ['create', 'update', 'delete', 'read'];
+            foreach ($this->sideEffects as $effect) {
+                if (!\in_array($effect, $validEffects, true)) {
+                    throw new InvalidArgumentException(
+                        "Invalid side effect: '{$effect}'. Must be one of: " . implode(', ', $validEffects)
+                    );
+                }
+            }
+        }
+    }
 }
