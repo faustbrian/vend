@@ -130,11 +130,10 @@ abstract class AbstractFunction implements FunctionInterface
     #[Override()]
     public function getVersion(): string
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getVersion();
-        }
-
-        return '1.0.0';
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getVersion(),
+            '1.0.0',
+        );
     }
 
     /**
