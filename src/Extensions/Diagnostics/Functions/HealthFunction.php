@@ -12,9 +12,13 @@ namespace Cline\Forrst\Extensions\Diagnostics\Functions;
 use Carbon\CarbonImmutable;
 use Cline\Forrst\Attributes\Descriptor;
 use Cline\Forrst\Contracts\HealthCheckerInterface;
+use Cline\Forrst\Exceptions\TooManyRequestsException;
 use Cline\Forrst\Exceptions\UnauthorizedException;
 use Cline\Forrst\Extensions\Diagnostics\Descriptors\HealthDescriptor;
 use Cline\Forrst\Functions\AbstractFunction;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
+use Psr\Log\LoggerInterface;
 
 /**
  * Comprehensive health check system function.
@@ -34,26 +38,54 @@ use Cline\Forrst\Functions\AbstractFunction;
 #[Descriptor(HealthDescriptor::class)]
 final class HealthFunction extends AbstractFunction
 {
+    private const int HEALTH_CACHE_TTL = 10; // seconds
+    private const int RATE_LIMIT_PER_MINUTE = 60;
+    private const float HEALTH_CHECK_TIMEOUT = 5.0; // seconds
+
     /**
      * Create a new health function instance.
      *
      * @param array<int, HealthCheckerInterface> $checkers               Array of registered health checker instances
      * @param bool                               $requireAuthForDetails Whether to require authentication for detailed health info
+     * @param null|LoggerInterface               $logger                Logger instance for warnings and errors
      */
     public function __construct(
         private readonly array $checkers = [],
         private readonly bool $requireAuthForDetails = true,
+        private readonly ?LoggerInterface $logger = null,
     ) {}
 
     /**
      * Execute the health check function.
      *
-     * @throws UnauthorizedException If detailed information is requested without authentication
+     * @throws TooManyRequestsException If rate limit is exceeded
+     * @throws UnauthorizedException    If detailed information is requested without authentication
      *
      * @return array<string, mixed> Health check response
      */
     public function __invoke(): array
     {
+        // Rate limit health checks
+        $clientIp = $this->requestObject->getContext('client_ip', 'unknown');
+        $rateLimitKey = "health_check:{$clientIp}";
+
+        if (!RateLimiter::attempt($rateLimitKey, self::RATE_LIMIT_PER_MINUTE, fn (): bool => true, 60)) {
+            $this->logger?->warning('Health check rate limit exceeded', [
+                'ip' => $clientIp,
+                'limit' => self::RATE_LIMIT_PER_MINUTE,
+            ]);
+
+            throw TooManyRequestsException::createWithDetails(
+                limit: self::RATE_LIMIT_PER_MINUTE,
+                used: self::RATE_LIMIT_PER_MINUTE,
+                windowValue: 1,
+                windowUnit: 'minute',
+                retryAfterValue: 60,
+                retryAfterUnit: 'second',
+                detail: 'Too many health check requests. Please try again later.',
+            );
+        }
+
         $component = $this->requestObject->getArgument('component');
         $includeDetails = $this->requestObject->getArgument('include_details', true);
 
@@ -75,24 +107,72 @@ final class HealthFunction extends AbstractFunction
             ];
         }
 
+        // Use cache for anonymous health checks
+        if (!$this->isAuthenticated() && $component === null) {
+            $cacheKey = 'health_check:public';
+
+            return Cache::remember($cacheKey, self::HEALTH_CACHE_TTL, function () use ($includeDetails): array {
+                return $this->performHealthChecks($includeDetails, null);
+            });
+        }
+
+        // Always execute fresh checks for authenticated users or specific components
+        return $this->performHealthChecks($includeDetails, $component);
+    }
+
+    /**
+     * Perform health checks with timeout protection and error handling.
+     *
+     * @param bool        $includeDetails Whether to include detailed health info
+     * @param null|string $component      Specific component to check or null for all
+     *
+     * @return array<string, mixed> Health check response
+     */
+    private function performHealthChecks(bool $includeDetails, ?string $component): array
+    {
         $components = [];
         $worstStatus = 'healthy';
+        $startTime = microtime(true);
 
         foreach ($this->checkers as $checker) {
+            // Check timeout
+            if (microtime(true) - $startTime > self::HEALTH_CHECK_TIMEOUT) {
+                $this->logger?->warning('Health check timeout reached', [
+                    'elapsed' => microtime(true) - $startTime,
+                    'timeout' => self::HEALTH_CHECK_TIMEOUT,
+                ]);
+
+                break;
+            }
+
             if ($component !== null && $checker->getName() !== $component) {
                 continue;
             }
 
-            $result = $checker->check();
+            try {
+                $result = $checker->check();
 
-            // Sanitize output based on authentication
-            $components[$checker->getName()] = $this->sanitizeHealthResult(
-                $result,
-                $includeDetails,
-                $this->isAuthenticated(),
-            );
+                // Sanitize output based on authentication
+                $components[$checker->getName()] = $this->sanitizeHealthResult(
+                    $result,
+                    $includeDetails,
+                    $this->isAuthenticated(),
+                );
 
-            $worstStatus = $this->worstStatus($worstStatus, $result['status']);
+                $worstStatus = $this->worstStatus($worstStatus, $result['status']);
+            } catch (\Throwable $e) {
+                $this->logger?->error('Health checker failed', [
+                    'checker' => $checker->getName(),
+                    'error' => $e->getMessage(),
+                ]);
+
+                $components[$checker->getName()] = [
+                    'status' => 'unhealthy',
+                    'error' => 'Health check failed',
+                ];
+
+                $worstStatus = $this->worstStatus($worstStatus, 'unhealthy');
+            }
         }
 
         $response = [
