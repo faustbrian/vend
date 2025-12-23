@@ -15,7 +15,9 @@ use Cline\Forrst\Data\ResponseData;
 use Cline\Forrst\Enums\ErrorCode;
 use Cline\Forrst\Events\ExecutingFunction;
 use Cline\Forrst\Events\FunctionExecuted;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\Facades\Cache;
 use Override;
 
 use function assert;
@@ -77,7 +79,7 @@ final class IdempotencyExtension extends AbstractExtension
     /**
      * Context for current request (set in onExecutingFunction).
      *
-     * @var null|array{key: string, cache_key: string}
+     * @var null|array{key: string, cache_key: string, lock: Lock}
      */
     private ?array $context = null;
 
@@ -165,27 +167,44 @@ final class IdempotencyExtension extends AbstractExtension
             return;
         }
 
-        // Check for processing lock
+        // Use Laravel's atomic lock acquisition
         $lockKey = $cacheKey.':lock';
+        $lock = Cache::lock($lockKey, self::LOCK_TTL_SECONDS);
 
-        if ($this->cache->has($lockKey)) {
-            $event->setResponse($this->buildProcessingResponse($event, $key));
-            $event->stopPropagation();
+        try {
+            // Try to acquire lock (non-blocking)
+            if (!$lock->get()) {
+                // Someone else has the lock
+                $event->setResponse($this->buildProcessingResponse($event, $key));
+                $event->stopPropagation();
 
-            return;
+                return;
+            }
+
+            // Double-check cache after acquiring lock (handles race condition)
+            $cached = $this->cache->get($cacheKey);
+            if ($cached !== null) {
+                $lock->release();
+                assert(is_array($cached), 'Cached value must be an array');
+
+                /** @var array<string, mixed> $cached */
+                $event->setResponse($this->handleCachedResult($event, $key, $cached, $argumentsHash));
+                $event->stopPropagation();
+
+                return;
+            }
+
+            // Store context for onFunctionExecuted
+            $this->context = [
+                'key' => $key,
+                'cache_key' => $cacheKey,
+                'lock' => $lock, // Store lock to release later
+            ];
+        } catch (\Throwable $e) {
+            $lock->release();
+
+            throw $e;
         }
-
-        // Acquire processing lock
-        $this->cache->put($lockKey, [
-            'request_id' => $event->request->id,
-            'started_at' => now()->toIso8601String(),
-        ], self::LOCK_TTL_SECONDS);
-
-        // Store context for onFunctionExecuted
-        $this->context = [
-            'key' => $key,
-            'cache_key' => $cacheKey,
-        ];
     }
 
     /**
@@ -205,7 +224,7 @@ final class IdempotencyExtension extends AbstractExtension
 
         $key = $this->context['key'];
         $cacheKey = $this->context['cache_key'];
-        $lockKey = $cacheKey.':lock';
+        $lock = $this->context['lock'];
         $ttl = $this->getTtl($event->extension->options);
         $expiresAt = now()->addSeconds($ttl);
 
@@ -219,7 +238,11 @@ final class IdempotencyExtension extends AbstractExtension
         ];
 
         $this->cache->put($cacheKey, $cacheEntry, $ttl);
-        $this->cache->forget($lockKey);
+
+        // Release lock
+        if ($lock instanceof Lock) {
+            $lock->release();
+        }
 
         // Add idempotency metadata to response
         $extensions = $event->getResponse()->extensions ?? [];
