@@ -215,10 +215,8 @@ final readonly class RequestHandler
      */
     private function handleException(Throwable $throwable, array|string $request, int $startTime): RequestResultData
     {
-        // ID is required - generate one if not present in request
-        $id = is_array($request) && isset($request['id']) && is_string($request['id'])
-            ? $request['id']
-            : Str::ulid()->toString();
+        // ID is required - extract from request or generate
+        $id = $this->extractRequestId($request);
 
         if ($throwable instanceof AbstractRequestException) {
             return RequestResultData::from([
@@ -338,6 +336,40 @@ final readonly class RequestHandler
         }
 
         return !array_is_list($array);
+    }
+
+    /**
+     * Extract request ID from array or string request.
+     *
+     * Attempts to parse string requests to extract ID before error handling,
+     * ensuring request/response correlation is maintained even for parse errors.
+     *
+     * @param  array<string, mixed>|string $request Request to extract ID from
+     * @return string                      Request ID or generated ULID
+     */
+    private function extractRequestId(array|string $request): string
+    {
+        // If already array, extract ID directly
+        if (is_array($request)) {
+            if (isset($request['id']) && is_string($request['id'])) {
+                return $request['id'];
+            }
+
+            return Str::ulid()->toString();
+        }
+
+        // For string requests, attempt JSON decode to extract ID
+        try {
+            $decoded = json_decode($request, true, 512, JSON_THROW_ON_ERROR);
+
+            if (is_array($decoded) && isset($decoded['id']) && is_string($decoded['id'])) {
+                return $decoded['id'];
+            }
+        } catch (\JsonException) {
+            // JSON decode failed - return generated ID
+        }
+
+        return Str::ulid()->toString();
     }
 
     /**
