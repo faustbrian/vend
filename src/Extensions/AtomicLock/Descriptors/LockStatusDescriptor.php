@@ -29,9 +29,14 @@ final class LockStatusDescriptor implements DescriptorInterface
             ->summary('Check the status of a lock')
             ->argument(
                 name: 'key',
-                schema: ['type' => 'string'],
+                schema: [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'maxLength' => 200,
+                    'pattern' => '^[a-zA-Z0-9\-_:.]+$',
+                ],
                 required: true,
-                description: 'Lock key (with scope prefix if applicable)',
+                description: 'Lock key (with scope prefix if applicable). Must contain only alphanumeric characters, dash, underscore, colon, and dot.',
             )
             ->result(
                 schema: [

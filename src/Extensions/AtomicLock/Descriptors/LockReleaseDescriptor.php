@@ -30,15 +30,24 @@ final class LockReleaseDescriptor implements DescriptorInterface
             ->summary('Release a lock with ownership verification')
             ->argument(
                 name: 'key',
-                schema: ['type' => 'string'],
+                schema: [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'maxLength' => 200,
+                    'pattern' => '^[a-zA-Z0-9\-_:.]+$',
+                ],
                 required: true,
-                description: 'Lock key (with scope prefix if applicable)',
+                description: 'Lock key (with scope prefix if applicable). Must contain only alphanumeric characters, dash, underscore, colon, and dot.',
             )
             ->argument(
                 name: 'owner',
-                schema: ['type' => 'string'],
+                schema: [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'format' => 'uuid',
+                ],
                 required: true,
-                description: 'Owner token from lock acquisition',
+                description: 'Owner token from lock acquisition (UUID format)',
             )
             ->result(
                 schema: [
