@@ -190,4 +190,29 @@ final class ComponentsData extends Data
 
         return $references;
     }
+
+    /**
+     * Add a schema component.
+     *
+     * @param string                    $name   Schema identifier
+     * @param array<string, mixed> $schema JSON Schema definition
+     *
+     * @return self New instance with the schema added
+     */
+    public function withSchema(string $name, array $schema): self
+    {
+        $schemas = $this->schemas ?? [];
+        $schemas[$name] = $schema;
+
+        return new self(
+            schemas: $schemas,
+            contentDescriptors: $this->contentDescriptors,
+            errors: $this->errors,
+            examples: $this->examples,
+            examplePairings: $this->examplePairings,
+            links: $this->links,
+            tags: $this->tags,
+            resources: $this->resources,
+        );
+    }
 }

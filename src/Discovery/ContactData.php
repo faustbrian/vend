@@ -50,6 +50,59 @@ final class ContactData extends Data
     }
 
     /**
+     * Create contact with email only.
+     *
+     * @param string $email Contact email address
+     *
+     * @return self
+     */
+    public static function email(string $email): self
+    {
+        return self::create(email: $email);
+    }
+
+    /**
+     * Create contact with name and email.
+     *
+     * @param string $name  Contact name
+     * @param string $email Contact email address
+     *
+     * @return self
+     */
+    public static function person(string $name, string $email): self
+    {
+        return self::create(name: $name, email: $email);
+    }
+
+    /**
+     * Create contact with all information.
+     *
+     * @param string $name  Contact name
+     * @param string $url   Contact URL
+     * @param string $email Contact email address
+     *
+     * @return self
+     */
+    public static function full(string $name, string $url, string $email): self
+    {
+        return self::create(name: $name, url: $url, email: $email);
+    }
+
+    /**
+     * Create contact for a team.
+     *
+     * @param string $teamName Team name
+     * @param string $url      Team documentation or support URL
+     * @param string $email    Team email address
+     *
+     * @return self
+     */
+    public static function team(string $teamName, string $url, string $email): self
+    {
+        return self::create(name: $teamName, url: $url, email: $email);
+    }
+
+    /**
      * Create a new contact information instance.
      *
      * @param null|string $name  The name of the contact person, team, or organization responsible

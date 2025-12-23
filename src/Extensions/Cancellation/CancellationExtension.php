@@ -117,6 +117,10 @@ final class CancellationExtension extends AbstractExtension implements ProvidesF
                 'priority' => 5,
                 'method' => 'onExecutingFunction',
             ],
+            FunctionExecuted::class => [
+                'priority' => 5,
+                'method' => 'onFunctionExecuted',
+            ],
         ];
     }
 
