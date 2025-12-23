@@ -101,7 +101,7 @@ final class DryRunExtension extends AbstractExtension
      *
      * Creates response indicating validation passed and mutation would succeed.
      * Includes metadata about affected resources, state changes, side effects,
-     * and estimated execution time.
+     * and estimated execution time. Validates input structures.
      *
      * @param RequestObjectData                     $request           Original request
      * @param array<int, array<string, mixed>>      $wouldAffect       Resources that would be modified
@@ -110,6 +110,8 @@ final class DryRunExtension extends AbstractExtension
      * @param null|array{value: int, unit: string}  $estimatedDuration Estimated execution time
      *
      * @return ResponseData Dry-run response with valid=true
+     *
+     * @throws \InvalidArgumentException If wouldAffect entries are missing required fields
      */
     public function buildValidResponse(
         RequestObjectData $request,
@@ -118,6 +120,14 @@ final class DryRunExtension extends AbstractExtension
         ?array $sideEffects = null,
         ?array $estimatedDuration = null,
     ): ResponseData {
+        // Validate wouldAffect entries
+        foreach ($wouldAffect as $entry) {
+            if (!isset($entry['type']) || !isset($entry['action'])) {
+                throw new \InvalidArgumentException(
+                    'would_affect entries must have type and action fields',
+                );
+            }
+        }
         $data = [
             'valid' => true,
             'would_affect' => $wouldAffect,
