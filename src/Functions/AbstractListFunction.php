@@ -37,21 +37,74 @@ use Override;
 abstract class AbstractListFunction extends AbstractFunction
 {
     /**
-     * Handle the list request and return cursor-paginated results.
+     * Handle the list request and return paginated results.
      *
      * Builds a query using the resource class returned by getResourceClass(), applies
-     * request filters and parameters through the query() helper, and returns cursor-paginated
+     * request filters and parameters through the query() helper, and returns paginated
      * results wrapped in a DocumentData structure with pagination metadata.
      *
-     * @return DocumentData The paginated resource collection with cursor metadata and links
+     * The pagination strategy is determined by getPaginationStrategy():
+     * - 'cursor': Cursor-based pagination (default, best for real-time feeds)
+     * - 'offset': Offset-based pagination (best for traditional page numbers)
+     * - 'simple': Simple next/prev pagination (best for large datasets)
+     * - 'none': Return all results without pagination (use cautiously)
+     *
+     * @return DocumentData The paginated resource collection with pagination metadata and links
      */
     public function handle(): DocumentData
     {
-        return $this->cursorPaginate(
-            $this->query(
-                $this->getResourceClass(),
+        $query = $this->query($this->getResourceClass());
+
+        return match ($this->getPaginationStrategy()) {
+            'cursor' => $this->cursorPaginate($query),
+            'offset' => $this->paginate($query),
+            'simple' => $this->simplePaginate($query),
+            'none' => $this->collection($query->get()),
+            default => throw new \InvalidArgumentException(
+                \sprintf(
+                    'Invalid pagination strategy "%s". Must be one of: cursor, offset, simple, none',
+                    $this->getPaginationStrategy(),
+                ),
             ),
-        );
+        };
+    }
+
+    /**
+     * Get the pagination strategy to use for this list function.
+     *
+     * Available strategies:
+     * - 'cursor': Cursor-based pagination (default, best for real-time feeds)
+     * - 'offset': Offset-based pagination (best for traditional page numbers)
+     * - 'simple': Simple next/prev pagination (best for large datasets)
+     * - 'none': Return all results without pagination (use cautiously)
+     *
+     * Override this method to change the pagination strategy for specific list functions.
+     *
+     * @return string The pagination strategy identifier
+     */
+    protected function getPaginationStrategy(): string
+    {
+        return 'cursor';
+    }
+
+    /**
+     * Get the default pagination limit when not specified in request.
+     *
+     * @return int Default limit (must be between 1 and maximum allowed)
+     */
+    protected function getDefaultLimit(): int
+    {
+        return 25;
+    }
+
+    /**
+     * Get the maximum allowed pagination limit.
+     *
+     * @return int Maximum limit
+     */
+    protected function getMaximumLimit(): int
+    {
+        return 100;
     }
 
     /**

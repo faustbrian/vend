@@ -93,11 +93,30 @@ abstract class AbstractExtension implements ExtensionInterface
      * Subclasses can override to include additional metadata like documentation URLs.
      *
      * @return array{urn: string, documentation?: string} Capability information
+     *
+     * @throws \RuntimeException If URN is empty or has invalid format
      */
     public function toCapabilities(): array
     {
+        $urn = $this->getUrn();
+
+        if (empty($urn)) {
+            throw new \RuntimeException(sprintf(
+                'Extension %s returned empty URN from getUrn()',
+                static::class
+            ));
+        }
+
+        if (!str_starts_with($urn, 'forrst.ext.')) {
+            throw new \RuntimeException(sprintf(
+                'Invalid URN format "%s" from %s: must start with "forrst.ext."',
+                $urn,
+                static::class
+            ));
+        }
+
         return [
-            'urn' => $this->getUrn(),
+            'urn' => $urn,
         ];
     }
 }

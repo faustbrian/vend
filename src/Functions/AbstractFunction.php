@@ -146,11 +146,10 @@ abstract class AbstractFunction implements FunctionInterface
     #[Override()]
     public function getSummary(): string
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getSummary();
-        }
-
-        return $this->getUrn();
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getSummary(),
+            fn (): string => $this->getUrn(),
+        );
     }
 
     /**
@@ -158,16 +157,15 @@ abstract class AbstractFunction implements FunctionInterface
      *
      * Reads from the #[Descriptor] attribute if present, otherwise returns an empty array.
      *
-     * @return array<int, ArgumentData|array<string, mixed>> Array of argument descriptors
+     * @return list<ArgumentData> Array of argument descriptors
      */
     #[Override()]
     public function getArguments(): array
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getArguments();
-        }
-
-        return [];
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getArguments(),
+            [],
+        );
     }
 
     /**
