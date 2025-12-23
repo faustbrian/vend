@@ -18,7 +18,9 @@ use function is_array;
 use function is_int;
 use function is_numeric;
 use function is_string;
+use function preg_match;
 use function sprintf;
+use function trim;
 
 /**
  * Represents an async operation.
@@ -71,8 +73,8 @@ final class OperationData extends AbstractData
      *                                                information specific to the application.
      */
     public function __construct(
-        public readonly string $id,
-        public readonly string $function,
+        string $id,
+        string $function,
         public readonly ?string $version = null,
         OperationStatus $status = OperationStatus::Pending,
         ?float $progress = null,
@@ -83,6 +85,28 @@ final class OperationData extends AbstractData
         ?CarbonImmutable $cancelledAt = null,
         public readonly ?array $metadata = null,
     ) {
+        // Validate required fields
+        if (trim($id) === '') {
+            throw new \InvalidArgumentException('Operation ID cannot be empty');
+        }
+
+        if (trim($function) === '') {
+            throw new \InvalidArgumentException('Operation function name cannot be empty');
+        }
+
+        // Validate ID format (UUID/ULID pattern)
+        if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) {
+            // Try ULID format as well
+            if (!preg_match('/^[0-9A-HJKMNP-TV-Z]{26}$/i', $id)) {
+                throw new \InvalidArgumentException(
+                    sprintf('Operation ID must be a valid UUID or ULID, got: %s', $id),
+                );
+            }
+        }
+
+        $this->id = $id;
+        $this->function = $function;
+
         // Validate progress bounds
         if ($progress !== null && ($progress < 0.0 || $progress > 1.0)) {
             throw new \InvalidArgumentException(
