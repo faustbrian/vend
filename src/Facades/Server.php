@@ -27,14 +27,12 @@ use Override;
  * clean static access without manual container resolution. Commonly used to retrieve
  * function definitions, extension configurations, and server metadata.
  *
- * @method static array<int, mixed>  getContentDescriptors() Get Forrst Discovery content descriptor schemas
  * @method static ExtensionRegistry  getExtensionRegistry()  Get the extension registry for extension management
  * @method static FunctionRepository getFunctionRepository() Get the function repository for resolving functions
  * @method static array<int, string> getMiddleware()         Get HTTP middleware stack for this server
  * @method static string             getName()               Get the server name identifier
  * @method static string             getRouteName()          Get the Laravel route name for this server
  * @method static string             getRoutePath()          Get the HTTP path for this server endpoint
- * @method static array<int, mixed>  getSchemas()            Get Forrst Discovery schema definitions
  * @method static string             getVersion()            Get the server version string
  *
  * @author Brian Faust <brian@cline.sh>
@@ -52,7 +50,7 @@ final class Server extends Facade
      *
      * @return string The ServerInterface class name used as the container binding key
      */
-    #[Override()]
+    #[Override]
     protected static function getFacadeAccessor(): string
     {
         return ServerInterface::class;
