@@ -65,16 +65,11 @@ final class LocaleExtension extends AbstractExtension
     public const string DEFAULT_TIMEZONE = 'UTC';
 
     /**
-     * Resolved locale for the current request.
+     * Cache for language resolution results to improve performance.
      *
-     * @var array{language: string, fallback_used: bool, timezone: ?string, currency: ?string}
+     * @var array<string, array{0: string, 1: bool}>
      */
-    private array $resolvedLocale = [
-        'language' => self::DEFAULT_LANGUAGE,
-        'fallback_used' => false,
-        'timezone' => null,
-        'currency' => null,
-    ];
+    private array $resolutionCache = [];
 
     /**
      * Create a new extension instance.
@@ -134,7 +129,7 @@ final class LocaleExtension extends AbstractExtension
      *
      * Extracts locale preferences from the request extension options and resolves
      * them against the server's supported languages and validation rules. Stores
-     * the resolved locale for use during request processing.
+     * the resolved locale in request metadata for thread safety.
      *
      * @param RequestValidated $event Event containing validated request data
      */
@@ -147,7 +142,10 @@ final class LocaleExtension extends AbstractExtension
         }
 
         $options = $extension->options ?? [];
-        $this->resolvedLocale = $this->resolveLocale($options);
+        $resolvedLocale = $this->resolveLocale($options);
+
+        // Store in request metadata for thread safety
+        $event->request->meta['locale_resolved'] = $resolvedLocale;
     }
 
     /**
@@ -161,11 +159,19 @@ final class LocaleExtension extends AbstractExtension
      */
     public function onFunctionExecuted(FunctionExecuted $event): void
     {
+        // Retrieve resolved locale from metadata (thread-safe)
+        $resolvedLocale = $event->request->meta['locale_resolved'] ?? [
+            'language' => self::DEFAULT_LANGUAGE,
+            'fallback_used' => false,
+            'timezone' => null,
+            'currency' => null,
+        ];
+
         $responseData = array_filter([
-            'language' => $this->resolvedLocale['language'],
-            'fallback_used' => $this->resolvedLocale['fallback_used'],
-            'timezone' => $this->resolvedLocale['timezone'],
-            'currency' => $this->resolvedLocale['currency'],
+            'language' => $resolvedLocale['language'],
+            'fallback_used' => $resolvedLocale['fallback_used'],
+            'timezone' => $resolvedLocale['timezone'],
+            'currency' => $resolvedLocale['currency'],
         ], fn (bool|string|null $value): bool => $value !== null);
 
         $extensions = $event->getResponse()->extensions ?? [];
@@ -186,55 +192,81 @@ final class LocaleExtension extends AbstractExtension
     /**
      * Get the resolved language for the current request.
      *
-     * Returns the language code that was negotiated for this request based on
-     * client preferences and server support. Use this in application code to
-     * select translations or format localized content.
+     * DEPRECATED: This method is not thread-safe. Access locale data from
+     * request metadata instead: $request->meta['locale_resolved']['language']
+     *
+     * @deprecated Use request metadata directly for thread-safe access
      *
      * @return string RFC 5646 language tag (e.g., 'en', 'en-US')
      */
     public function getLanguage(): string
     {
-        return $this->resolvedLocale['language'];
+        trigger_error(
+            'LocaleExtension::getLanguage() is deprecated. Access $request->meta[\'locale_resolved\'][\'language\'] instead.',
+            \E_USER_DEPRECATED,
+        );
+
+        return self::DEFAULT_LANGUAGE;
     }
 
     /**
      * Get the resolved timezone for the current request.
      *
-     * Returns the validated IANA timezone identifier to use for date/time
-     * formatting in this request, or null if no timezone was specified.
+     * DEPRECATED: This method is not thread-safe. Access locale data from
+     * request metadata instead: $request->meta['locale_resolved']['timezone']
+     *
+     * @deprecated Use request metadata directly for thread-safe access
      *
      * @return null|string IANA timezone identifier or null
      */
     public function getTimezone(): ?string
     {
-        return $this->resolvedLocale['timezone'];
+        trigger_error(
+            'LocaleExtension::getTimezone() is deprecated. Access $request->meta[\'locale_resolved\'][\'timezone\'] instead.',
+            \E_USER_DEPRECATED,
+        );
+
+        return null;
     }
 
     /**
      * Get the resolved currency for the current request.
      *
-     * Returns the validated ISO 4217 currency code to use for monetary
-     * formatting in this request, or null if no currency was specified.
+     * DEPRECATED: This method is not thread-safe. Access locale data from
+     * request metadata instead: $request->meta['locale_resolved']['currency']
+     *
+     * @deprecated Use request metadata directly for thread-safe access
      *
      * @return null|string ISO 4217 currency code or null
      */
     public function getCurrency(): ?string
     {
-        return $this->resolvedLocale['currency'];
+        trigger_error(
+            'LocaleExtension::getCurrency() is deprecated. Access $request->meta[\'locale_resolved\'][\'currency\'] instead.',
+            \E_USER_DEPRECATED,
+        );
+
+        return null;
     }
 
     /**
      * Check if a fallback language was used.
      *
-     * Indicates whether the server selected a fallback language because the
-     * client's preferred language was not available. Useful for logging or
-     * displaying language mismatch warnings.
+     * DEPRECATED: This method is not thread-safe. Access locale data from
+     * request metadata instead: $request->meta['locale_resolved']['fallback_used']
+     *
+     * @deprecated Use request metadata directly for thread-safe access
      *
      * @return bool True if fallback was used, false if exact match
      */
     public function wasFallbackUsed(): bool
     {
-        return $this->resolvedLocale['fallback_used'];
+        trigger_error(
+            'LocaleExtension::wasFallbackUsed() is deprecated. Access $request->meta[\'locale_resolved\'][\'fallback_used\'] instead.',
+            \E_USER_DEPRECATED,
+        );
+
+        return false;
     }
 
     /**
@@ -327,7 +359,8 @@ final class LocaleExtension extends AbstractExtension
      *
      * Implements sophisticated language negotiation using progressive fallback.
      * Attempts exact match first, then progressively shorter language tags,
-     * then fallback languages, and finally defaults to English.
+     * then fallback languages, and finally defaults to English. Results are
+     * cached to improve performance on repeated resolutions.
      *
      * Resolution order:
      * 1. Exact match (e.g., zh-Hans-CN)
@@ -346,6 +379,34 @@ final class LocaleExtension extends AbstractExtension
             return [self::DEFAULT_LANGUAGE, true];
         }
 
+        // Check cache first
+        $cacheKey = $requested.'|'.implode(',', $fallbacks);
+
+        if (isset($this->resolutionCache[$cacheKey])) {
+            return $this->resolutionCache[$cacheKey];
+        }
+
+        // Perform resolution
+        $result = $this->resolveLanguageUncached($requested, $fallbacks);
+
+        // Cache the result
+        $this->resolutionCache[$cacheKey] = $result;
+
+        return $result;
+    }
+
+    /**
+     * Perform language resolution without caching.
+     *
+     * Internal method that performs the actual language negotiation logic.
+     * Results should be cached by the public resolveLanguage method.
+     *
+     * @param  string                    $requested Requested RFC 5646 language tag
+     * @param  array<int, string>        $fallbacks Fallback language tags in preference order
+     * @return array{0: string, 1: bool} Tuple of [resolved language tag, whether fallback was used]
+     */
+    private function resolveLanguageUncached(string $requested, array $fallbacks): array
+    {
         // Try exact match first
         if ($this->isLanguageSupported($requested)) {
             return [$requested, false];
