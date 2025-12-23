@@ -45,10 +45,10 @@ trait InteractsWithTransformer
      * DocumentData structure. Applies field selection and relationship loading based on
      * request parameters (fields, include).
      *
-     * @param  Model|ResourceInterface $item The model or resource to transform
+     * @param  ResourceInterface|Model $item The model or resource to transform
      * @return DocumentData            JSON API document containing the transformed item with metadata
      */
-    protected function item(Model|ResourceInterface $item): DocumentData
+    protected function item(ResourceInterface|Model $item): DocumentData
     {
         return Transformer::create($this->requestObject)->item($item);
     }
@@ -76,10 +76,10 @@ trait InteractsWithTransformer
      * pagination enables efficient navigation through large datasets without offset
      * performance degradation.
      *
-     * @param  Builder<Model>|QueryBuilder $query The query to paginate and transform
+     * @param  QueryBuilder|Builder<Model> $query The query to paginate and transform
      * @return DocumentData                JSON API document with paginated results and cursor metadata
      */
-    protected function cursorPaginate(Builder|QueryBuilder $query): DocumentData
+    protected function cursorPaginate(QueryBuilder|Builder $query): DocumentData
     {
         return Transformer::create($this->requestObject)->cursorPaginate($query);
     }
@@ -91,10 +91,10 @@ trait InteractsWithTransformer
      * into a DocumentData structure with pagination metadata including current page,
      * total pages, per-page count, and navigation links.
      *
-     * @param  Builder<Model>|QueryBuilder $query The query to paginate and transform
+     * @param  QueryBuilder|Builder<Model> $query The query to paginate and transform
      * @return DocumentData                JSON API document with paginated results and page metadata
      */
-    protected function paginate(Builder|QueryBuilder $query): DocumentData
+    protected function paginate(QueryBuilder|Builder $query): DocumentData
     {
         return Transformer::create($this->requestObject)->paginate($query);
     }
@@ -106,10 +106,10 @@ trait InteractsWithTransformer
      * Provides only next/previous links without total page information. Ideal for large
      * datasets where count queries are expensive or unnecessary.
      *
-     * @param  Builder<Model>|QueryBuilder $query The query to paginate and transform
+     * @param  QueryBuilder|Builder<Model> $query The query to paginate and transform
      * @return DocumentData                JSON API document with paginated results and basic navigation links
      */
-    protected function simplePaginate(Builder|QueryBuilder $query): DocumentData
+    protected function simplePaginate(QueryBuilder|Builder $query): DocumentData
     {
         return Transformer::create($this->requestObject)->simplePaginate($query);
     }
