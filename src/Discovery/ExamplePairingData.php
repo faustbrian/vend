@@ -9,6 +9,7 @@
 
 namespace Cline\Forrst\Discovery;
 
+use InvalidArgumentException;
 use Spatie\LaravelData\Data;
 
 /**
@@ -50,5 +51,88 @@ final class ExamplePairingData extends Data
         public readonly ?string $summary = null,
         public readonly ?string $description = null,
         public readonly ?array $result = null,
-    ) {}
+    ) {
+        $this->validateParams($params);
+
+        if ($result !== null) {
+            $this->validateResult($result);
+        }
+    }
+
+    /**
+     * Validate params array structure.
+     *
+     * @param array<int, array<string, mixed>> $params
+     *
+     * @throws InvalidArgumentException
+     */
+    private function validateParams(array $params): void
+    {
+        if (empty($params)) {
+            throw new InvalidArgumentException(
+                'Example pairing must have at least one parameter',
+            );
+        }
+
+        foreach ($params as $index => $param) {
+            if (!\is_array($param)) {
+                throw new InvalidArgumentException(
+                    "Parameter at index {$index} must be an array, got: ".\gettype($param),
+                );
+            }
+
+            if (!isset($param['name'])) {
+                throw new InvalidArgumentException(
+                    "Parameter at index {$index} is missing required 'name' key",
+                );
+            }
+
+            if (!isset($param['value'])) {
+                throw new InvalidArgumentException(
+                    "Parameter at index {$index} is missing required 'value' key",
+                );
+            }
+
+            if (!\is_string($param['name'])) {
+                throw new InvalidArgumentException(
+                    "Parameter 'name' at index {$index} must be a string",
+                );
+            }
+
+            // Validate parameter name follows conventions
+            if (!\preg_match('/^[a-z][a-zA-Z0-9_]*$/', $param['name'])) {
+                throw new InvalidArgumentException(
+                    "Parameter name '{$param['name']}' must follow camelCase/snake_case convention",
+                );
+            }
+        }
+    }
+
+    /**
+     * Validate result structure.
+     *
+     * @param array<string, mixed> $result
+     *
+     * @throws InvalidArgumentException
+     */
+    private function validateResult(array $result): void
+    {
+        if (!isset($result['name'])) {
+            throw new InvalidArgumentException(
+                "Result is missing required 'name' key",
+            );
+        }
+
+        if (!isset($result['value'])) {
+            throw new InvalidArgumentException(
+                "Result is missing required 'value' key",
+            );
+        }
+
+        if (!\is_string($result['name'])) {
+            throw new InvalidArgumentException(
+                "Result 'name' must be a string",
+            );
+        }
+    }
 }
