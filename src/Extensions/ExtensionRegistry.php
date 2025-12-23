@@ -41,10 +41,69 @@ final class ExtensionRegistry
      * Indexes the extension by its URN for fast lookup. If an extension with
      * the same URN is already registered, it will be replaced.
      *
+     * Validates that all event subscriptions reference valid, callable methods.
+     *
      * @param ExtensionInterface $extension Extension instance to register
+     *
+     * @throws \InvalidArgumentException If event subscription configuration is invalid
      */
     public function register(ExtensionInterface $extension): void
     {
+        // Validate event subscriptions
+        foreach ($extension->getSubscribedEvents() as $eventClass => $config) {
+            // Validate event class exists
+            if (!class_exists($eventClass)) {
+                throw new \InvalidArgumentException(
+                    sprintf('Event class %s does not exist', $eventClass)
+                );
+            }
+
+            // Validate subscription config structure
+            if (!isset($config['priority']) || !isset($config['method'])) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'Event subscription for %s must include "priority" and "method" keys',
+                        $eventClass
+                    )
+                );
+            }
+
+            // Validate handler method exists and is callable
+            $method = $config['method'];
+            if (!method_exists($extension, $method)) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'Extension %s references non-existent method %s for event %s',
+                        get_class($extension),
+                        $method,
+                        $eventClass
+                    )
+                );
+            }
+
+            if (!is_callable([$extension, $method])) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'Method %s::%s is not callable (check visibility)',
+                        get_class($extension),
+                        $method
+                    )
+                );
+            }
+
+            // Validate priority is an integer
+            if (!is_int($config['priority'])) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'Priority for %s::%s must be an integer, %s given',
+                        $eventClass,
+                        $method,
+                        gettype($config['priority'])
+                    )
+                );
+            }
+        }
+
         $this->extensions[$extension->getUrn()] = $extension;
     }
 
