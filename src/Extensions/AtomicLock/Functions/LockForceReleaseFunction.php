@@ -56,10 +56,10 @@ final class LockForceReleaseFunction extends AbstractFunction
             throw LockKeyRequiredException::create();
         }
 
-        $this->extension->forceReleaseLock($key);
+        $released = $this->extension->forceReleaseLock($key);
 
         return [
-            'released' => true,
+            'released' => $released,
             'key' => $key,
             'forced' => true,
         ];

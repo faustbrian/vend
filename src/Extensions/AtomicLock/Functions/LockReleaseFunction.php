@@ -65,10 +65,10 @@ final class LockReleaseFunction extends AbstractFunction
             throw LockOwnerRequiredException::create();
         }
 
-        $this->extension->releaseLock($key, $owner);
+        $released = $this->extension->releaseLock($key, $owner);
 
         return [
-            'released' => true,
+            'released' => $released,
             'key' => $key,
         ];
     }
