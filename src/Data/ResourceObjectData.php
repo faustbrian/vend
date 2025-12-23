@@ -51,7 +51,22 @@ final class ResourceObjectData extends AbstractData
         public readonly array $attributes,
         public readonly ?array $relationships = null,
         public readonly ?array $meta = null,
-    ) {}
+    ) {
+        if ($type === '') {
+            throw new \InvalidArgumentException('Resource type cannot be empty');
+        }
+
+        if ($id === '') {
+            throw new \InvalidArgumentException('Resource id cannot be empty');
+        }
+
+        // JSON:API spec recommends lowercase, hyphenated or underscored type names
+        if (!preg_match('/^[a-z][a-z0-9_-]*$/', $type)) {
+            throw new \InvalidArgumentException(
+                sprintf('Resource type "%s" must be lowercase and contain only letters, numbers, hyphens, or underscores', $type)
+            );
+        }
+    }
 
     /**
      * Create a resource object data instance from an array.
