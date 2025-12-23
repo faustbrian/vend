@@ -31,6 +31,7 @@ use Cline\Forrst\Extensions\ExtensionUrn;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockTimeoutException as LaravelLockTimeoutException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Override;
 
@@ -295,8 +296,27 @@ final class AtomicLockExtension extends AbstractExtension implements ProvidesFun
 
         // Auto-release if configured
         if ($context['auto_release']) {
-            $context['lock']->release();
-            $this->clearLockMetadata($context['full_key']);
+            try {
+                $released = $context['lock']->release();
+
+                if (!$released) {
+                    // Log the failure but don't throw - response already generated
+                    Log::warning('Failed to auto-release lock', [
+                        'lock_key' => $context['full_key'],
+                        'owner' => $context['owner'],
+                    ]);
+                } else {
+                    $this->clearLockMetadata($context['full_key']);
+                }
+            } catch (\Throwable $e) {
+                // Log but don't throw - we're in post-execution phase
+                Log::warning('Exception during auto-release of lock', [
+                    'lock_key' => $context['full_key'],
+                    'owner' => $context['owner'],
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
         }
 
         // Add lock metadata to response
