@@ -98,6 +98,23 @@ interface ExtensionInterface
      * - 100: Default
      * - 200+: Post-processing (deprecation, quota)
      *
+     * @example
+     * ```php
+     * public function getSubscribedEvents(): array
+     * {
+     *     return [
+     *         RequestValidated::class => [
+     *             'priority' => 20,
+     *             'method' => 'handleRequestValidated',
+     *         ],
+     *         ExecutingFunction::class => [
+     *             'priority' => 25,
+     *             'method' => 'beforeExecution',
+     *         ],
+     *     ];
+     * }
+     * ```
+     *
      * @return array<class-string<ExtensionEvent>, array{priority: int, method: string}>
      */
     public function getSubscribedEvents(): array;
