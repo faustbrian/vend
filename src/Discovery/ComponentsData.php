@@ -215,4 +215,54 @@ final class ComponentsData extends Data
             resources: $this->resources,
         );
     }
+
+    /**
+     * Add a content descriptor component.
+     *
+     * @param string       $name       Descriptor identifier
+     * @param ArgumentData $descriptor Content descriptor definition
+     *
+     * @return self New instance with the descriptor added
+     */
+    public function withContentDescriptor(string $name, ArgumentData $descriptor): self
+    {
+        $descriptors = $this->contentDescriptors ?? [];
+        $descriptors[$name] = $descriptor;
+
+        return new self(
+            schemas: $this->schemas,
+            contentDescriptors: $descriptors,
+            errors: $this->errors,
+            examples: $this->examples,
+            examplePairings: $this->examplePairings,
+            links: $this->links,
+            tags: $this->tags,
+            resources: $this->resources,
+        );
+    }
+
+    /**
+     * Add an error component.
+     *
+     * @param string              $name  Error identifier
+     * @param ErrorDefinitionData $error Error definition
+     *
+     * @return self New instance with the error added
+     */
+    public function withError(string $name, ErrorDefinitionData $error): self
+    {
+        $errors = $this->errors ?? [];
+        $errors[$name] = $error;
+
+        return new self(
+            schemas: $this->schemas,
+            contentDescriptors: $this->contentDescriptors,
+            errors: $errors,
+            examples: $this->examples,
+            examplePairings: $this->examplePairings,
+            links: $this->links,
+            tags: $this->tags,
+            resources: $this->resources,
+        );
+    }
 }

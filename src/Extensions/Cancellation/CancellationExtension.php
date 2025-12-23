@@ -179,7 +179,7 @@ final class CancellationExtension extends AbstractExtension implements ProvidesF
      *
      * Looks up the cancellation token status in cache. If marked as cancelled,
      * stops propagation and returns CANCELLED error response. Cleans up token
-     * after cancellation is detected.
+     * after cancellation is detected. Uses locks to prevent race conditions.
      *
      * @param ExecutingFunction $event Function execution event with extension data
      */
@@ -193,24 +193,29 @@ final class CancellationExtension extends AbstractExtension implements ProvidesF
             return;
         }
 
-        // Check if the request has been cancelled
-        $status = Cache::get(self::CACHE_PREFIX.$token);
+        $key = self::CACHE_PREFIX.$token;
+        $lock = Cache::lock($key.':lock', 1);
 
-        if ($status !== 'cancelled') {
-            return;
+        try {
+            $lock->block(1);
+
+            $status = Cache::get($key);
+
+            if ($status === 'cancelled') {
+                Cache::forget($key);
+
+                $event->setResponse(ResponseData::error(
+                    new ErrorData(
+                        code: ErrorCode::Cancelled,
+                        message: 'Request was cancelled by client',
+                    ),
+                    $event->request->id,
+                ));
+                $event->stopPropagation();
+            }
+        } finally {
+            $lock->release();
         }
-
-        // Clean up the token
-        Cache::forget(self::CACHE_PREFIX.$token);
-
-        $event->setResponse(ResponseData::error(
-            new ErrorData(
-                code: ErrorCode::Cancelled,
-                message: 'Request was cancelled by client',
-            ),
-            $event->request->id,
-        ));
-        $event->stopPropagation();
     }
 
     /**
