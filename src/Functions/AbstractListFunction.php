@@ -250,9 +250,28 @@ abstract class AbstractListFunction extends AbstractFunction
         }
 
         // Common query arguments
-        $arguments = [...$arguments, ...$this->getQueryArguments()];
+        $arguments = [...$arguments, ...$this->getQueryArguments(), ...$this->getCustomArguments()];
 
         return $arguments;
+    }
+
+    /**
+     * Get additional custom arguments specific to this list function.
+     *
+     * Override this method to add resource-specific query parameters
+     * beyond the standard fields, filter, include, and sort arguments.
+     *
+     * Example use cases:
+     * - Add boolean flags for common filters (e.g., in_stock, published)
+     * - Add enum arguments for specific categorizations
+     * - Add date range filters
+     * - Add resource-specific search parameters
+     *
+     * @return list<ArgumentData> Additional argument descriptors
+     */
+    protected function getCustomArguments(): array
+    {
+        return [];
     }
 
     /**

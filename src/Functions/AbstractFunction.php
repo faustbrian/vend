@@ -66,7 +66,7 @@ abstract class AbstractFunction implements FunctionInterface
      * this property to retrieve request arguments, extension options, and other
      * request metadata within your function's handle() method.
      */
-    protected RequestObjectData $requestObject;
+    protected ?RequestObjectData $requestObject = null;
 
     /**
      * Cached function descriptor resolved from #[Descriptor] attribute.
