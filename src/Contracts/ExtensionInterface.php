@@ -22,6 +22,17 @@ use Cline\Forrst\Events\ExtensionEvent;
  * Each extension subscribes to lifecycle events and processes requests/responses
  * at appropriate points in the request lifecycle.
  *
+ * EXTENSION DEPENDENCIES:
+ * Extensions may depend on other extensions being registered. Use priorities
+ * to ensure correct execution order. Document dependencies in extension
+ * documentation.
+ *
+ * Example: The "async-result-stream" extension depends on both "async" and
+ * "stream" extensions being registered. Set priorities accordingly:
+ * - async: priority 40
+ * - stream: priority 41
+ * - async-result-stream: priority 42
+ *
  * Lifecycle events (in order):
  * - RequestValidated: After parsing, before function resolution
  * - ExecutingFunction: Before function dispatch (can short-circuit)
