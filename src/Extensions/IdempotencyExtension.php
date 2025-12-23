@@ -72,6 +72,11 @@ final class IdempotencyExtension extends AbstractExtension
     private const int DEFAULT_TTL_SECONDS = 86_400;
 
     /**
+     * Maximum TTL in seconds (30 days).
+     */
+    private const int MAX_TTL_SECONDS = 2_592_000;
+
+    /**
      * Processing lock TTL in seconds.
      */
     private const int LOCK_TTL_SECONDS = 30;
@@ -327,10 +332,12 @@ final class IdempotencyExtension extends AbstractExtension
      *
      * Converts the TTL duration object (value and unit) into seconds. Supports
      * second, minute, hour, and day units. Falls back to the default TTL if
-     * not specified in the request options.
+     * not specified in the request options. Enforces maximum TTL limit.
      *
      * @param  null|array<string, mixed> $options Extension options from request
      * @return int                       TTL in seconds
+     *
+     * @throws \InvalidArgumentException If TTL exceeds maximum or is not positive
      */
     public function getTtl(?array $options): int
     {
@@ -345,13 +352,25 @@ final class IdempotencyExtension extends AbstractExtension
         $rawUnit = $ttl['unit'] ?? 'second';
         $unit = is_string($rawUnit) ? $rawUnit : 'second';
 
-        return match ($unit) {
+        $seconds = match ($unit) {
             'second' => $value,
             'minute' => $value * 60,
             'hour' => $value * 3_600,
             'day' => $value * 86_400,
             default => $value,
         };
+
+        if ($seconds > self::MAX_TTL_SECONDS) {
+            throw new \InvalidArgumentException(
+                'TTL cannot exceed '.self::MAX_TTL_SECONDS.' seconds (30 days)',
+            );
+        }
+
+        if ($seconds <= 0) {
+            throw new \InvalidArgumentException('TTL must be positive');
+        }
+
+        return $seconds;
     }
 
     /**
