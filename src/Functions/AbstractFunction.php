@@ -79,6 +79,24 @@ abstract class AbstractFunction implements FunctionInterface
     private bool $descriptorResolved = false;
 
     /**
+     * Delegate to descriptor or return default value.
+     *
+     * @template T
+     *
+     * @param  callable(FunctionDescriptor): T  $getter
+     * @param  T  $default
+     * @return T
+     */
+    private function fromDescriptorOr(callable $getter, mixed $default): mixed
+    {
+        $descriptor = $this->resolveDescriptor();
+
+        return $descriptor instanceof FunctionDescriptor
+            ? $getter($descriptor)
+            : $default;
+    }
+
+    /**
      * Get the URN (Uniform Resource Name) for this function.
      *
      * Reads from the #[Descriptor] attribute if present, otherwise generates
@@ -89,18 +107,17 @@ abstract class AbstractFunction implements FunctionInterface
     #[Override()]
     public function getUrn(): string
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getUrn();
-        }
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getUrn(),
+            function (): string {
+                /** @var string $vendor */
+                $vendor = config('rpc.vendor', 'app');
+                $name = Str::kebab(class_basename(static::class));
+                $name = (string) preg_replace('/-function$/', '', $name);
 
-        /** @var string $vendor */
-        $vendor = config('rpc.vendor', 'app');
-        $name = Str::kebab(class_basename(static::class));
-
-        // Remove common suffixes like -function
-        $name = (string) preg_replace('/-function$/', '', $name);
-
-        return "urn:{$vendor}:forrst:fn:{$name}";
+                return "urn:{$vendor}:forrst:fn:{$name}";
+            },
+        );
     }
 
     /**

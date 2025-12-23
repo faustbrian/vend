@@ -12,7 +12,10 @@ namespace Cline\Forrst\Data;
 use Override;
 use Spatie\LaravelData\Data;
 
+use RuntimeException;
+
 use function is_array;
+use function sprintf;
 
 /**
  * Base data transfer object with automatic null value filtering.
@@ -32,6 +35,14 @@ use function is_array;
  */
 abstract class AbstractData extends Data
 {
+    /**
+     * Maximum allowed recursion depth during null value removal.
+     *
+     * Prevents infinite recursion and stack overflow errors with deeply
+     * nested data structures.
+     */
+    private const MAX_RECURSION_DEPTH = 100;
+
     /**
      * Convert the data object to an array with null values removed.
      *

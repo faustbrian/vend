@@ -196,6 +196,9 @@ abstract class AbstractRequestException extends Exception implements RpcExceptio
         ?SourceData $source = null,
         ?array $details = null,
     ): static {
+        // PHPStan cannot infer that 'new static' returns 'static' type in abstract classes
+        // This is a known limitation when using LSB (Late Static Binding) with abstract constructors
+        // Safe to suppress as all subclasses must call parent constructor accepting ErrorData
         // @phpstan-ignore-next-line
         return new static(
             new ErrorData(

@@ -35,6 +35,16 @@ use Cline\Forrst\Contracts\ExtensionInterface;
 abstract class AbstractExtension implements ExtensionInterface
 {
     /**
+     * Get the unique URN identifier for this extension.
+     *
+     * Subclasses must implement this to return their unique identifier used
+     * in extension discovery and request routing.
+     *
+     * @return string Extension URN (e.g., 'forrst.ext.async')
+     */
+    abstract public function getUrn(): string;
+
+    /**
      * Determine if extension runs on all requests.
      *
      * By default, extensions are opt-in and only run when explicitly requested
