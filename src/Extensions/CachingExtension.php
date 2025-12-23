@@ -187,19 +187,20 @@ final class CachingExtension extends AbstractExtension
     /**
      * Generate ETag from response value.
      *
-     * Creates a short hash-based identifier for cache validation. Uses MD5 for
-     * speed, with first 8 characters providing sufficient uniqueness for typical
-     * function responses. ETags are quoted per HTTP conventions.
+     * Creates a hash-based identifier for cache validation using SHA-256.
+     * Uses first 16 characters (64 bits) for strong collision resistance
+     * while keeping ETags reasonably compact. ETags are quoted per HTTP conventions.
      *
      * @param mixed $value Response value to hash (will be JSON-encoded)
      *
      * @return string Quoted ETag string suitable for cache validation
+     *
+     * @throws \JsonException If value cannot be JSON-encoded
      */
     public function generateEtag(mixed $value): string
     {
-        $json = json_encode($value);
-        assert($json !== false);
-        $hash = mb_substr(md5($json), 0, 8);
+        $json = json_encode($value, JSON_THROW_ON_ERROR);
+        $hash = mb_substr(hash('sha256', $json), 0, 16); // 16 chars = 64 bits
 
         return sprintf('"%s"', $hash);
     }

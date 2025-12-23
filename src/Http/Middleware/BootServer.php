@@ -82,10 +82,21 @@ final readonly class BootServer
             throw RouteNameRequiredException::create();
         }
 
-        $this->container->instance(
-            ServerInterface::class,
-            $this->serverRepository->findByName($routeName),
-        );
+        $server = $this->serverRepository->findByName($routeName);
+
+        if (!$server instanceof ServerInterface) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Server repository returned invalid instance for route "%s". '.
+                    'Expected %s, got %s',
+                    $routeName,
+                    ServerInterface::class,
+                    get_debug_type($server)
+                )
+            );
+        }
+
+        $this->container->instance(ServerInterface::class, $server);
 
         $response = $next($request);
         assert($response instanceof Response);

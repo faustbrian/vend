@@ -185,14 +185,13 @@ final class AtomicLockExtension extends AbstractExtension implements ProvidesFun
             throw LockAcquisitionFailedException::forKey($key, $scope, $fullKey);
         }
 
-        // Calculate expiration
+        // IMMEDIATELY calculate and store metadata BEFORE setting context
+        // This prevents race condition where lock exists but metadata doesn't
         $acquiredAt = now()->toIso8601String();
         $expiresAt = now()->addSeconds($ttl)->toIso8601String();
-
-        // Store lock metadata for status queries and cross-process release
         $this->storeLockMetadata($fullKey, $owner, $acquiredAt, $expiresAt, $ttl);
 
-        // Store context for onFunctionExecuted
+        // THEN set context for onFunctionExecuted
         $this->context = [
             'key' => $key,
             'full_key' => $fullKey,
