@@ -317,16 +317,15 @@ abstract class AbstractFunction implements FunctionInterface
      *
      * Reads from the #[Descriptor] attribute if present, otherwise returns null.
      *
-     * @return null|array<int, array<string, mixed>|LinkData> Links or null
+     * @return null|list<LinkData> Links or null
      */
     #[Override()]
     public function getLinks(): ?array
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getLinks();
-        }
-
-        return null;
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getLinks(),
+            null,
+        );
     }
 
     /**
@@ -339,11 +338,10 @@ abstract class AbstractFunction implements FunctionInterface
     #[Override()]
     public function getExternalDocs(): ?ExternalDocsData
     {
-        if (($descriptor = $this->resolveDescriptor()) instanceof FunctionDescriptor) {
-            return $descriptor->getExternalDocs();
-        }
-
-        return null;
+        return $this->fromDescriptorOr(
+            fn (FunctionDescriptor $d) => $d->getExternalDocs(),
+            null,
+        );
     }
 
     /**

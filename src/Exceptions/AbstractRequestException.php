@@ -123,13 +123,21 @@ abstract class AbstractRequestException extends Exception implements RpcExceptio
     /**
      * Get HTTP headers to include in the error response.
      *
-     * @return array<string, string> Array of HTTP headers to include in the response.
-     *                               Default implementation returns empty array, but
-     *                               subclasses may override to add headers like Retry-After
+     * Automatically includes Retry-After header for retryable errors when the error
+     * details contain a 'retry_after' value. This helps clients implement proper
+     * backoff strategies for transient failures like rate limiting.
+     *
+     * @return array<string, string> Array of HTTP headers to include in the response
      */
     public function getHeaders(): array
     {
-        return [];
+        $headers = [];
+
+        if ($this->isRetryable() && isset($this->error->details['retry_after'])) {
+            $headers['Retry-After'] = (string) $this->error->details['retry_after'];
+        }
+
+        return $headers;
     }
 
     /**

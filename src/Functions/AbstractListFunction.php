@@ -161,7 +161,8 @@ abstract class AbstractListFunction extends AbstractFunction
     #[Override()]
     public function getArguments(): array
     {
-        $this->getResourceClass();
+        // Validate resource class early to fail fast with clear error
+        $this->getValidatedResourceClass();
 
         $strategy = $this->getPaginationStrategy();
         $arguments = [];
