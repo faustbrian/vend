@@ -55,6 +55,7 @@ if (!function_exists('post_forrst') && function_exists('Pest\Laravel\postJson'))
      *                                              which function version to invoke
      * @param  null|string               $id        Optional custom request ID for tracking requests,
      *                                              defaults to a ULID if not provided
+     * @param  string                    $routeName Optional route name to post to, defaults to 'rpc'
      * @return TestResponse<Response>    Laravel test response for fluent assertion chaining
      */
     function post_forrst(
@@ -62,13 +63,14 @@ if (!function_exists('post_forrst') && function_exists('Pest\Laravel\postJson'))
         ?array $arguments = null,
         ?string $version = null,
         ?string $id = null,
+        string $routeName = 'rpc',
     ): TestResponse {
         if ($id === null) {
             $id = (string) \Illuminate\Support\Str::ulid();
         }
 
         return postJson(
-            route('rpc'),
+            route($routeName),
             array_filter([
                 'protocol' => ProtocolData::forrst()->toArray(),
                 'id' => $id,
