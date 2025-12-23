@@ -61,6 +61,8 @@ final class ErrorDefinitionData extends Data
             default => $this->validateCode($code),
         };
 
+        $this->validateMessagePlaceholders($message);
+
         if ($details !== null) {
             $this->validateJsonSchema($details);
         }
@@ -80,6 +82,38 @@ final class ErrorDefinitionData extends Data
         }
 
         return $code;
+    }
+
+    /**
+     * Validate message uses safe numbered placeholders.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateMessagePlaceholders(string $message): void
+    {
+        // Check for potentially unsafe named placeholders
+        if (preg_match('/\{[A-Za-z_][A-Za-z0-9_]*\}/', $message)) {
+            trigger_error(
+                'Warning: Error message uses named placeholders like {fieldName}. '
+                .'Consider using numbered placeholders {0}, {1} to prevent injection.',
+                E_USER_WARNING
+            );
+        }
+
+        // Validate numbered placeholders are sequential
+        preg_match_all('/\{(\d+)\}/', $message, $matches);
+        if (!empty($matches[1])) {
+            $indices = array_map('intval', $matches[1]);
+            sort($indices);
+            $expected = range(0, \count($indices) - 1);
+
+            if ($indices !== $expected) {
+                throw new \InvalidArgumentException(
+                    'Message placeholders must be sequential starting from {0}. '
+                    .'Found: '.implode(', ', array_map(fn ($i) => "{{$i}}", $indices))
+                );
+            }
+        }
     }
 
     /**
