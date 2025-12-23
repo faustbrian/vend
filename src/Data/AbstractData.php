@@ -30,6 +30,31 @@ use function sprintf;
  * recursively to nested structures, ensuring clean JSON output that
  * matches the Forrst protocol specification.
  *
+ * Example usage:
+ * ```php
+ * class UserData extends AbstractData
+ * {
+ *     public function __construct(
+ *         public readonly string $name,
+ *         public readonly ?string $email = null,
+ *         public readonly ?array $metadata = null,
+ *     ) {}
+ * }
+ *
+ * $user = new UserData(name: 'John', email: null);
+ * $user->toArray(); // Returns: ['name' => 'John'] (email is omitted)
+ *
+ * // Customizing filtering behavior
+ * class CustomData extends AbstractData
+ * {
+ *     protected function shouldFilterValue(string $key, mixed $value): bool
+ *     {
+ *         // Filter out null values and empty arrays
+ *         return $value === null || $value === [];
+ *     }
+ * }
+ * ```
+ *
  * @see https://docs.cline.sh/forrst/document-structure
  * @see https://jsonapi.org/format/#document-structure
  */
@@ -114,6 +139,11 @@ abstract class AbstractData extends Data
      *
      * According to JSON:API specification: "Keys MUST either be omitted or
      * have a null value to indicate that a particular link is unavailable."
+     *
+     * Performance: O(n) where n is the total number of elements in the tree.
+     * For deeply nested structures exceeding 100 levels, the method will throw
+     * a RuntimeException to prevent stack overflow. Consider flattening data
+     * structures or implementing custom serialization for extreme nesting.
      *
      * @param  array<string, mixed> $array Input array potentially containing null values
      * @param  int                  $depth Current recursion depth

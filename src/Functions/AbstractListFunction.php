@@ -29,6 +29,14 @@ use Override;
  * parameters including cursor, limit, fields, filter, include, and sort. These descriptors
  * enable automatic API documentation and client code generation.
  *
+ * SECURITY WARNING for Resource Implementations:
+ * The resource class implementation MUST validate and whitelist all client-provided input:
+ * - Validate filter attributes against a whitelist in getFilters()
+ * - Validate relationship names against a whitelist in getRelationships()
+ * - Validate sort attributes against database columns
+ * - Never trust client-provided attribute names without validation
+ * - Prevent query injection by sanitizing all filter values
+ *
  * @author Brian Faust <brian@cline.sh>
  *
  * @see https://docs.cline.sh/forrst/system-functions

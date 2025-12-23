@@ -394,12 +394,29 @@ abstract class AbstractFunction implements FunctionInterface
      * Called before function execution to provide access to request arguments
      * and metadata throughout the function's lifecycle.
      *
-     * @param RequestObjectData $requestObject The Forrst request data
+     * @param  RequestObjectData  $requestObject  The Forrst request data
      */
     #[Override()]
     public function setRequest(RequestObjectData $requestObject): void
     {
         $this->requestObject = $requestObject;
+    }
+
+    /**
+     * Get the current request object.
+     *
+     * @throws \LogicException When accessed before setRequest() is called
+     */
+    protected function getRequestObject(): RequestObjectData
+    {
+        if ($this->requestObject === null) {
+            throw new \LogicException(
+                'Request object not available. '.
+                'Ensure setRequest() is called before accessing request data.',
+            );
+        }
+
+        return $this->requestObject;
     }
 
     /**
