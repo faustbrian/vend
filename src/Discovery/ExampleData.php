@@ -87,4 +87,28 @@ final class ExampleData extends Data
             );
         }
     }
+
+    /**
+     * Validates that externalValue contains a valid URL.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateExternalValue(): void
+    {
+        if ($this->externalValue !== null) {
+            if (filter_var($this->externalValue, \FILTER_VALIDATE_URL) === false) {
+                throw new \InvalidArgumentException(
+                    "Invalid URL in externalValue: '{$this->externalValue}'"
+                );
+            }
+
+            // Warn if not using HTTPS for security
+            if (str_starts_with($this->externalValue, 'http://')) {
+                trigger_error(
+                    "Warning: externalValue should use HTTPS for security: '{$this->externalValue}'",
+                    \E_USER_WARNING
+                );
+            }
+        }
+    }
 }
