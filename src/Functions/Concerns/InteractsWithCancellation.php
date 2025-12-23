@@ -27,6 +27,13 @@ use function resolve;
  * allowing functions to clean up resources and return proper error responses when
  * operations are cancelled mid-execution.
  *
+ * **Requirements:**
+ * - Host class must have RequestObjectData $requestObject property
+ * - Host class must call setRequest() before using cancellation methods
+ * - CancellationExtension must be registered in service container
+ *
+ * @property RequestObjectData $requestObject Required by this trait
+ *
  * @author Brian Faust <brian@cline.sh>
  *
  * @see https://docs.cline.sh/forrst/extensions/cancellation
@@ -34,25 +41,48 @@ use function resolve;
 trait InteractsWithCancellation
 {
     /**
+     * Cached cancellation token to avoid repeated extension resolution.
+     */
+    private ?string $cachedCancellationToken = null;
+
+    /**
+     * Flag indicating whether the cancellation token has been resolved.
+     */
+    private bool $cancellationTokenResolved = false;
+
+    /**
      * Extract the cancellation token from the current request.
      *
      * Retrieves the cancellation token if the request includes the cancellation
      * extension with a token parameter. Returns null if the extension is not
      * present or the token is not provided.
      *
+     * The token is cached after first retrieval to avoid repeated extension
+     * resolution during multiple cancellation checks.
+     *
      * @return null|string The cancellation token string or null if not provided
      */
     protected function getCancellationToken(): ?string
     {
+        if ($this->cancellationTokenResolved) {
+            return $this->cachedCancellationToken;
+        }
+
+        $this->cancellationTokenResolved = true;
+
         $extension = $this->requestObject->getExtension(ExtensionUrn::Cancellation);
 
         if ($extension === null) {
+            $this->cachedCancellationToken = null;
+
             return null;
         }
 
         $token = $extension->options['token'] ?? null;
 
-        return is_string($token) ? $token : null;
+        $this->cachedCancellationToken = is_string($token) ? $token : null;
+
+        return $this->cachedCancellationToken;
     }
 
     /**
