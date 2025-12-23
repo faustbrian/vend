@@ -73,6 +73,7 @@ final class DiscoveryData extends Data
     ) {
         $this->validateVersions();
         $this->validateFunctions();
+        $this->validateServers();
     }
 
     /**
@@ -110,6 +111,30 @@ final class DiscoveryData extends Data
                     implode(', ', array_keys($duplicates))
                 )
             );
+        }
+    }
+
+    /**
+     * Validate that servers array contains valid DiscoveryServerData instances.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateServers(): void
+    {
+        if ($this->servers === null) {
+            return;
+        }
+
+        foreach ($this->servers as $index => $server) {
+            if (!$server instanceof DiscoveryServerData) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'All servers must be instances of DiscoveryServerData, got %s at index %d',
+                        get_debug_type($server),
+                        $index
+                    )
+                );
+            }
         }
     }
 
