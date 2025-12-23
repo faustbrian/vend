@@ -484,12 +484,18 @@ final class AtomicLockExtension extends AbstractExtension implements ProvidesFun
         $value = is_int($rawValue) ? $rawValue : (is_numeric($rawValue) ? (int) $rawValue : 0);
         $unit = $duration['unit'] ?? 'second';
 
+        if (!is_string($unit)) {
+            throw new \InvalidArgumentException('Duration unit must be a string');
+        }
+
         $seconds = match ($unit) {
             'second' => $value,
             'minute' => $value * 60,
             'hour' => $value * 3_600,
             'day' => $value * 86_400,
-            default => $value,
+            default => throw new \InvalidArgumentException(
+                "Invalid duration unit: {$unit}. Allowed: second, minute, hour, day",
+            ),
         };
 
         if ($seconds > self::MAX_TTL_SECONDS) {
