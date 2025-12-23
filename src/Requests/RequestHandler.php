@@ -307,35 +307,37 @@ final readonly class RequestHandler
 
         throw_if($request === [], StructurallyInvalidRequestException::create());
 
-        // Forrst does not support batch requests - must be associative array
-        throw_unless(
-            $this->isAssociative($request),
-            StructurallyInvalidRequestException::create([
+        // Explicit batch detection: check if array contains sequential numeric keys
+        // with each value being a potential request object
+        if (array_is_list($request)) {
+            // This is likely a batch - check first element
+            $firstElement = $request[0] ?? null;
+
+            if (is_array($firstElement) && isset($firstElement['call'])) {
+                // Confirmed batch request
+                throw StructurallyInvalidRequestException::create([
+                    [
+                        'status' => '400',
+                        'source' => ['pointer' => '/'],
+                        'title' => 'Batch requests not supported',
+                        'detail' => 'This server does not support batch requests. '.
+                                   'Send requests individually or use HTTP/2 multiplexing.',
+                    ],
+                ]);
+            }
+
+            // Sequential array but not a batch - malformed request
+            throw StructurallyInvalidRequestException::create([
                 [
                     'status' => '400',
                     'source' => ['pointer' => '/'],
-                    'title' => 'Invalid request',
-                    'detail' => 'Batch requests are not supported. Send requests individually or use HTTP pooling.',
+                    'title' => 'Malformed request',
+                    'detail' => 'Request must be a JSON object, not an array.',
                 ],
-            ]),
-        );
-
-        return $request;
-    }
-
-    /**
-     * Check if an array is associative (not a list).
-     *
-     * @param  array<mixed> $array Array to check
-     * @return bool         True if associative, false if sequential
-     */
-    private function isAssociative(array $array): bool
-    {
-        if ($array === []) {
-            return false;
+            ]);
         }
 
-        return !array_is_list($array);
+        return $request;
     }
 
     /**
