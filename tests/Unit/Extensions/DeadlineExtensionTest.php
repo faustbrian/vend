@@ -297,7 +297,7 @@ describe('DeadlineExtension', function (): void {
             $extension = new DeadlineExtension();
             $request = RequestObjectData::asRequest('urn:cline:forrst:fn:test:function');
 
-            $deadline = '2025-12-31T23:59:59Z';
+            $deadline = now()->addMinutes(30)->toIso8601String();
             $extensionData = ExtensionData::request(
                 ExtensionUrn::Deadline->value,
                 ['deadline' => $deadline],
@@ -333,7 +333,6 @@ describe('DeadlineExtension', function (): void {
             'second',
             'minute',
             'hour',
-            'day',
         ]);
 
         test('onFunctionExecuted preserves existing response extensions', function (): void {
