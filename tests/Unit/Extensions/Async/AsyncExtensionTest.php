@@ -74,6 +74,7 @@ describe('AsyncExtension', function (): void {
         test('createAsyncOperation generates operation and response with pending status', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
+            $repository->shouldReceive('find')->andReturn(null);
             $repository->shouldReceive('save')
                 ->once()
                 ->withArgs(fn ($operation): bool => $operation instanceof OperationData
@@ -103,6 +104,7 @@ describe('AsyncExtension', function (): void {
         test('createAsyncOperation includes callback URL in operation metadata when provided', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
+            $repository->shouldReceive('find')->andReturn(null);
             $repository->shouldReceive('save')
                 ->once()
                 ->withArgs(fn ($operation): bool => $operation->metadata['callback_url'] === 'https://example.com/callback');
@@ -125,6 +127,7 @@ describe('AsyncExtension', function (): void {
         test('createAsyncOperation includes original request ID in operation metadata', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
+            $repository->shouldReceive('find')->andReturn(null);
             $repository->shouldReceive('save')->once();
 
             $extension = new AsyncExtension($repository);
@@ -142,6 +145,7 @@ describe('AsyncExtension', function (): void {
         test('createAsyncOperation uses custom retry seconds in response', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
+            $repository->shouldReceive('find')->andReturn(null);
             $repository->shouldReceive('save')->once();
 
             $extension = new AsyncExtension($repository);
@@ -159,6 +163,7 @@ describe('AsyncExtension', function (): void {
         test('createAsyncOperation includes poll function specification in response', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
+            $repository->shouldReceive('find')->andReturn(null);
             $repository->shouldReceive('save')->once();
 
             $extension = new AsyncExtension($repository);
@@ -570,6 +575,7 @@ describe('AsyncExtension', function (): void {
         test('createAsyncOperation merges custom metadata with default metadata', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
+            $repository->shouldReceive('find')->andReturn(null);
             $repository->shouldReceive('save')
                 ->once()
                 ->withArgs(fn ($operation): bool => $operation->metadata['custom_key'] === 'custom_value'
@@ -594,6 +600,7 @@ describe('AsyncExtension', function (): void {
         test('createAsyncOperation generates unique operation IDs', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
+            $repository->shouldReceive('find')->andReturn(null);
             $repository->shouldReceive('save')->times(3);
 
             $extension = new AsyncExtension($repository);
@@ -617,6 +624,7 @@ describe('AsyncExtension', function (): void {
         test('createAsyncOperation includes function version in operation', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
+            $repository->shouldReceive('find')->andReturn(null);
             $repository->shouldReceive('save')->once();
 
             $extension = new AsyncExtension($repository);
