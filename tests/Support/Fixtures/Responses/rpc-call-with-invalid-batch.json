@@ -15,8 +15,8 @@
           "source": {
             "pointer": "/"
           },
-          "title": "Batch requests not supported",
-          "detail": "This server does not support batch requests. Send requests individually or use HTTP/2 multiplexing."
+          "title": "Malformed request",
+          "detail": "Request must be a JSON object, not an array."
         }
       ]
     }
