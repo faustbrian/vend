@@ -109,10 +109,11 @@ describe('Function Condition Coverage', function (): void {
 
         // Additional check: verify the function signature is correct
         $reflection = new ReflectionFunction('Cline\Forrst\post_forrst');
-        expect($reflection->getNumberOfParameters())->toBe(4);
+        expect($reflection->getNumberOfParameters())->toBe(5);
         expect($reflection->getParameters()[0]->getName())->toBe('function');
         expect($reflection->getParameters()[1]->getName())->toBe('arguments');
         expect($reflection->getParameters()[2]->getName())->toBe('version');
         expect($reflection->getParameters()[3]->getName())->toBe('id');
+        expect($reflection->getParameters()[4]->getName())->toBe('routeName');
     });
 });
