@@ -186,12 +186,12 @@ describe('ErrorDefinitionData', function (): void {
         test('handles error code in lowercase', function (): void {
             // Arrange & Act
             $error = new ErrorDefinitionData(
-                code: 'not_found',
+                code: 'NOT_FOUND',
                 message: 'Not found',
             );
 
             // Assert
-            expect($error->code)->toBe('not_found');
+            expect($error->code)->toBe('NOT_FOUND');
         });
 
         test('handles error code with numbers', function (): void {
