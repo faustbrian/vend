@@ -15,6 +15,7 @@ use Cline\Forrst\Data\ResponseData;
 use Cline\Forrst\Enums\ErrorCode;
 use Cline\Forrst\Events\ExecutingFunction;
 use Cline\Forrst\Events\FunctionExecuted;
+use Cline\Forrst\Exceptions\MustBePositiveException;
 use Cline\Forrst\Extensions\ExtensionUrn;
 use Cline\Forrst\Extensions\IdempotencyExtension;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
@@ -265,11 +266,9 @@ describe('IdempotencyExtension', function (): void {
             $extension = new IdempotencyExtension($cache);
             $options = ['ttl' => ['unit' => 'second']];
 
-            // Act
-            $ttl = $extension->getTtl($options);
-
-            // Assert
-            expect($ttl)->toBe(0);
+            // Act & Assert
+            expect(fn () => $extension->getTtl($options))
+                ->toThrow(MustBePositiveException::class);
         });
 
         test('getTtl handles missing unit', function (): void {
@@ -348,11 +347,9 @@ describe('IdempotencyExtension', function (): void {
             $extension = new IdempotencyExtension($cache);
             $options = ['ttl' => ['value' => 0, 'unit' => 'second']];
 
-            // Act
-            $ttl = $extension->getTtl($options);
-
-            // Assert
-            expect($ttl)->toBe(0);
+            // Act & Assert
+            expect(fn () => $extension->getTtl($options))
+                ->toThrow(MustBePositiveException::class);
         });
 
         test('onFunctionExecuted uses custom TTL from options', function (): void {
