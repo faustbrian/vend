@@ -8,6 +8,8 @@
  */
 
 use Cline\Forrst\Discovery\ResultDescriptorData;
+use Cline\Forrst\Exceptions\InvalidFieldValueException;
+use Cline\Forrst\Exceptions\MissingRequiredFieldException;
 
 describe('ResultDescriptorData', function (): void {
     describe('Happy Paths', function (): void {
@@ -163,12 +165,14 @@ describe('ResultDescriptorData', function (): void {
             // Act
             $array = $result->toArray();
 
-            // Assert - schema should be null, description should not be in array
+            // Assert - Spatie Data includes null fields in toArray output
             expect($array)->toHaveKey('resource')
                 ->and($array['resource'])->toBe('order')
-                ->and($array)->not->toHaveKey('schema')
-                ->and($array)->not->toHaveKey('description')
-                ->and($array)->toHaveKey('collection');
+                ->and($array)->toHaveKey('schema')
+                ->and($array['schema'])->toBeNull()
+                ->and($array)->toHaveKey('collection')
+                ->and($array)->toHaveKey('description')
+                ->and($array['description'])->toBeNull();
         });
 
         test('toArray includes description when set', function (): void {
@@ -189,17 +193,19 @@ describe('ResultDescriptorData', function (): void {
 
     describe('Edge Cases', function (): void {
         test('rejects null resource', function (): void {
-            // Arrange & Act
-            $result = new ResultDescriptorData();
+            // Arrange & Act - When schema is provided, resource can be null
+            $result = new ResultDescriptorData(
+                schema: ['type' => 'object'],
+            );
 
             // Assert
             expect($result->resource)->toBeNull();
         });
 
         test('rejects null schema', function (): void {
-            // Arrange & Act
+            // Arrange & Act - When resource is provided, schema can be null
             $result = new ResultDescriptorData(
-                schema: null,
+                resource: 'order',
             );
 
             // Assert
@@ -249,14 +255,15 @@ describe('ResultDescriptorData', function (): void {
         });
 
         test('rejects both resource and schema', function (): void {
-            // Arrange & Act
+            // Arrange & Act - Empty schema must have at least 'type' property
             $result = new ResultDescriptorData(
-                schema: [],
+                schema: ['type' => 'null'],
             );
 
-            // Assert
-            expect($result->schema)->toBe([])
-                ->and($result->schema)->toHaveCount(0);
+            // Assert - Schema with only type is valid minimal schema
+            expect($result->schema)->toBeArray()
+                ->and($result->schema)->toHaveKey('type')
+                ->and($result->schema['type'])->toBe('null');
         });
 
         test('handles complex schema structure', function (): void {
@@ -342,17 +349,19 @@ describe('ResultDescriptorData', function (): void {
 
     describe('Sad Paths', function (): void {
         test('validates optional resource field', function (): void {
-            // Arrange
-            $result = new ResultDescriptorData();
+            // Arrange - Provide schema, verify resource is optional
+            $result = new ResultDescriptorData(
+                schema: ['type' => 'object'],
+            );
 
             // Act & Assert
             expect($result->resource)->toBeNull();
         });
 
         test('validates optional schema field', function (): void {
-            // Arrange
+            // Arrange - Provide resource, verify schema is optional
             $result = new ResultDescriptorData(
-                schema: null,
+                resource: 'order',
             );
 
             // Act & Assert
@@ -360,17 +369,19 @@ describe('ResultDescriptorData', function (): void {
         });
 
         test('validates collection defaults to false', function (): void {
-            // Arrange
-            $result = new ResultDescriptorData();
+            // Arrange - Provide required resource field
+            $result = new ResultDescriptorData(
+                resource: 'order',
+            );
 
             // Act & Assert
             expect($result->collection)->toBeFalse();
         });
 
         test('validates optional description field', function (): void {
-            // Arrange
+            // Arrange - Provide required resource field
             $result = new ResultDescriptorData(
-                description: null,
+                resource: 'order',
             );
 
             // Act & Assert
