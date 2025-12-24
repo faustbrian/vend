@@ -442,7 +442,7 @@ describe('DeprecationExtension', function (): void {
             $extension->deprecateFunction('urn:cline:forrst:fn:test:function', 'Deprecated');
 
             $request = RequestObjectData::asRequest('urn:cline:forrst:fn:test:function');
-            $existingExtension = ExtensionData::response('urn:custom:ext', ['key' => 'value']);
+            $existingExtension = ExtensionData::response('urn:cline:forrst:ext:custom', ['key' => 'value']);
             $response = ResponseData::success(
                 ['data' => 'test'],
                 $request->id,
@@ -457,7 +457,7 @@ describe('DeprecationExtension', function (): void {
 
             // Assert
             expect($result->extensions)->toHaveCount(2)
-                ->and($result->extensions[0]->urn)->toBe('urn:custom:ext')
+                ->and($result->extensions[0]->urn)->toBe('urn:cline:forrst:ext:custom')
                 ->and($result->extensions[1]->urn)->toBe(ExtensionUrn::Deprecation->value);
         });
 

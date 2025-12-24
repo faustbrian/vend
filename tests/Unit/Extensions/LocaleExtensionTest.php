@@ -388,7 +388,7 @@ describe('LocaleExtension', function (): void {
                         ]),
                     ],
                 );
-                $existingExtension = ExtensionData::response('urn:custom:ext', ['key' => 'value']);
+                $existingExtension = ExtensionData::response('urn:cline:forrst:ext:custom', ['key' => 'value']);
                 $response = ResponseData::success(
                     ['data' => 'test'],
                     $request->id,
@@ -410,7 +410,7 @@ describe('LocaleExtension', function (): void {
                 // Assert
                 $result = $executedEvent->getResponse();
                 expect($result->extensions)->toHaveCount(2)
-                    ->and($result->extensions[0]->urn)->toBe('urn:custom:ext')
+                    ->and($result->extensions[0]->urn)->toBe('urn:cline:forrst:ext:custom')
                     ->and($result->extensions[1]->urn)->toBe(ExtensionUrn::Locale->value);
             });
 

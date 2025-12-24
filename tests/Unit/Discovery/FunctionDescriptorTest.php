@@ -390,7 +390,7 @@ describe('FunctionDescriptor', function (): void {
         test('sets extensions', function (): void {
             // Arrange
             $extensions = FunctionExtensionsData::from([
-                'allowed' => ['urn:forrst:ext:caching'],
+                'allowed' => ['urn:cline:forrst:ext:caching'],
             ]);
 
             // Act

@@ -181,7 +181,7 @@ describe('CachingExtension', function (): void {
         test('enrichResponse preserves existing extensions', function (): void {
             // Arrange
             $extension = new CachingExtension();
-            $existingExtension = ExtensionData::response('urn:custom:ext', ['key' => 'value']);
+            $existingExtension = ExtensionData::response('urn:cline:forrst:ext:custom', ['key' => 'value']);
             $response = ResponseData::success(
                 ['data' => 'test'],
                 'req-123',
@@ -194,7 +194,7 @@ describe('CachingExtension', function (): void {
 
             // Assert
             expect($enriched->extensions)->toHaveCount(2)
-                ->and($enriched->extensions[0]->urn)->toBe('urn:custom:ext')
+                ->and($enriched->extensions[0]->urn)->toBe('urn:cline:forrst:ext:custom')
                 ->and($enriched->extensions[1]->urn)->toBe(ExtensionUrn::Caching->value);
         });
 

@@ -336,7 +336,7 @@ describe('Operation Model', function (): void {
         test('handles multiple errors in array', function (): void {
             // Arrange
             $operation = new Operation([
-                'id' => 'op-multi-error',
+                'id' => 'op_multierror',
                 'function' => 'test.func',
                 'status' => 'failed',
                 'errors' => [

@@ -1,0 +1,21 @@
+➜  22▕         return new self(sprintf('%s is invalid: %s', $field, $reason));
+code is invalid: Error code must follow SCREAMING_SNAKE_CASE convention. Got: 'not_found'
+component is invalid: Valid components: database
+error.code is invalid: Error code must be SCREAMING_SNAKE_CASE string
+Extension urn is invalid: must follow format 'urn:vendor:forrst:ext:name', got: test
+Extension urn is invalid: must follow format 'urn:vendor:forrst:ext:name', got: urn:custom:ext
+id is invalid: Operation ID must be a valid UUID, ULID, or prefixed format (op_/op- followed by alphanumeric), got: op-caller-1
+id is invalid: Operation ID must be a valid UUID, ULID, or prefixed format (op_/op- followed by alphanumeric), got: op-exact-1
+id is invalid: Operation ID must be a valid UUID, ULID, or prefixed format (op_/op- followed by alphanumeric), got: op-limit-1
+id is invalid: Operation ID must be a valid UUID, ULID, or prefixed format (op_/op- followed by alphanumeric), got: op-list-1
+id is invalid: Operation ID must be a valid UUID, ULID, or prefixed format (op_/op- followed by alphanumeric), got: op-multi-error
+id is invalid: Operation ID must be a valid UUID, ULID, or prefixed format (op_/op- followed by alphanumeric), got: op-page-10
+operation_id is invalid: Invalid length: expected 27, got 11
+operation_id is invalid: Operation ID must be a valid UUID, ULID, or prefixed format (op_/op- followed by alphanumeric)
+output/error is invalid: Cannot specify both "output" and "error". Success scenarios use output, error scenarios use error field.
+resource/schema is invalid: Cannot specify both "resource" and "schema". Use resource for resource objects or schema for custom return types, but not both.
+sunset is invalid: Sunset date "2025-06-01" is in the past. Deprecated elements with past sunset dates should be removed.
+type is invalid: must be lowercase and contain only letters, numbers, hyphens, or underscores
+urn is invalid: Invalid extension URN: 'urn:cline:forrst:ext:caching'. Expected format: 'urn:forrst:ext:extensionname' (e.g., 'urn:forrst:ext:async')
+urn is invalid: Invalid extension URN: 'urn:vendor:product:forrst:ext:custom-feature'. Expected format: 'urn:forrst:ext:extensionname' (e.g., 'urn:forrst:ext:async')
+version is invalid: Invalid semantic version: '1'. Must follow semver format (e.g., '1.0.0')

@@ -14,12 +14,12 @@ describe('ServerExtensionDeclarationData', function (): void {
         test('creates instance with required fields', function (): void {
             // Arrange & Act
             $declaration = new ServerExtensionDeclarationData(
-                urn: 'urn:forrst:ext:async',
+                urn: 'urn:cline:forrst:ext:async',
                 version: '1.0.0',
             );
 
             // Assert
-            expect($declaration->urn)->toBe('urn:forrst:ext:async')
+            expect($declaration->urn)->toBe('urn:cline:forrst:ext:async')
                 ->and($declaration->version)->toBe('1.0.0');
         });
 
@@ -38,7 +38,7 @@ describe('ServerExtensionDeclarationData', function (): void {
         test('supports prerelease versions', function (): void {
             // Arrange & Act
             $declaration = new ServerExtensionDeclarationData(
-                urn: 'urn:forrst:ext:experimental',
+                urn: 'urn:cline:forrst:ext:experimental',
                 version: '0.1.0-alpha.1',
             );
 
@@ -49,7 +49,7 @@ describe('ServerExtensionDeclarationData', function (): void {
         test('toArray includes all fields', function (): void {
             // Arrange
             $declaration = new ServerExtensionDeclarationData(
-                urn: 'urn:forrst:ext:batching',
+                urn: 'urn:cline:forrst:ext:batching',
                 version: '1.2.3',
             );
 
@@ -59,7 +59,7 @@ describe('ServerExtensionDeclarationData', function (): void {
             // Assert
             expect($array)->toHaveKey('urn')
                 ->and($array)->toHaveKey('version')
-                ->and($array['urn'])->toBe('urn:forrst:ext:batching')
+                ->and($array['urn'])->toBe('urn:cline:forrst:ext:batching')
                 ->and($array['version'])->toBe('1.2.3');
         });
     });
@@ -68,18 +68,18 @@ describe('ServerExtensionDeclarationData', function (): void {
         test('handles extension with complex URN namespace', function (): void {
             // Arrange & Act
             $declaration = new ServerExtensionDeclarationData(
-                urn: 'urn:vendor:product:forrst:ext:custom-feature',
+                urn: 'urn:cline:forrst:ext:custom-feature',
                 version: '1.0.0',
             );
 
             // Assert
-            expect($declaration->urn)->toBe('urn:vendor:product:forrst:ext:custom-feature');
+            expect($declaration->urn)->toBe('urn:cline:forrst:ext:custom-feature');
         });
 
         test('handles version with build metadata', function (): void {
             // Arrange & Act
             $declaration = new ServerExtensionDeclarationData(
-                urn: 'urn:forrst:ext:build',
+                urn: 'urn:cline:forrst:ext:build',
                 version: '1.0.0+build.123',
             );
 
