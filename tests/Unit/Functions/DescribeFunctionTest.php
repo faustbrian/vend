@@ -164,7 +164,27 @@ describe('DescribeFunction', function (): void {
 
             test('includes server configuration with environment and URL', function (): void {
                 // Arrange
-                $repository = new FunctionRepository([]);
+                $mockFunction = mock(FunctionInterface::class, function (MockInterface $mock): void {
+                    $mock->shouldReceive('getUrn')->andReturn('urn:cline:forrst:fn:test:minimal');
+                    $mock->shouldReceive('getVersion')->andReturn('1.0.0');
+                    $mock->shouldReceive('getSummary')->andReturn('Minimal test function');
+                    $mock->shouldReceive('getArguments')->andReturn([]);
+                    $mock->shouldReceive('getResult')->andReturn(null);
+                    $mock->shouldReceive('getErrors')->andReturn([]);
+                    $mock->shouldReceive('isDiscoverable')->andReturn(true);
+                    $mock->shouldReceive('getDescription')->andReturn(null);
+                    $mock->shouldReceive('getTags')->andReturn(null);
+                    $mock->shouldReceive('getQuery')->andReturn(null);
+                    $mock->shouldReceive('getDeprecated')->andReturn(null);
+                    $mock->shouldReceive('getSideEffects')->andReturn(null);
+                    $mock->shouldReceive('getExamples')->andReturn(null);
+                    $mock->shouldReceive('getLinks')->andReturn(null);
+                    $mock->shouldReceive('getSimulations')->andReturn(null);
+                    $mock->shouldReceive('getExternalDocs')->andReturn(null);
+                    $mock->shouldReceive('getExtensions')->andReturn(null);
+                });
+
+                $repository = new FunctionRepository([$mockFunction]);
 
                 ServerFacade::shouldReceive('getFunctionRepository')->andReturn($repository);
                 ServerFacade::shouldReceive('getName')->andReturn('Production Server');
@@ -191,7 +211,7 @@ describe('DescribeFunction', function (): void {
             test('aggregates errors from multiple sources', function (): void {
                 // Arrange
                 $mockFunction1 = mock(FunctionInterface::class, function (MockInterface $mock): void {
-                    $mock->shouldReceive('getUrn')->andReturn('function.one');
+                    $mock->shouldReceive('getUrn')->andReturn('urn:cline:forrst:fn:function:one');
                     $mock->shouldReceive('getVersion')->andReturn('1.0.0');
                     $mock->shouldReceive('getSummary')->andReturn('Function One');
                     $mock->shouldReceive('getArguments')->andReturn([]);
@@ -213,7 +233,7 @@ describe('DescribeFunction', function (): void {
                 });
 
                 $mockFunction2 = mock(FunctionInterface::class, function (MockInterface $mock): void {
-                    $mock->shouldReceive('getUrn')->andReturn('function.two');
+                    $mock->shouldReceive('getUrn')->andReturn('urn:cline:forrst:fn:function:two');
                     $mock->shouldReceive('getVersion')->andReturn('1.0.0');
                     $mock->shouldReceive('getSummary')->andReturn('Function Two');
                     $mock->shouldReceive('getArguments')->andReturn([]);
@@ -257,7 +277,27 @@ describe('DescribeFunction', function (): void {
 
             test('assembles components section with errors', function (): void {
                 // Arrange
-                $repository = new FunctionRepository([]);
+                $mockFunction = mock(FunctionInterface::class, function (MockInterface $mock): void {
+                    $mock->shouldReceive('getUrn')->andReturn('urn:cline:forrst:fn:test:minimal');
+                    $mock->shouldReceive('getVersion')->andReturn('1.0.0');
+                    $mock->shouldReceive('getSummary')->andReturn('Minimal test function');
+                    $mock->shouldReceive('getArguments')->andReturn([]);
+                    $mock->shouldReceive('getResult')->andReturn(null);
+                    $mock->shouldReceive('getErrors')->andReturn([]);
+                    $mock->shouldReceive('isDiscoverable')->andReturn(true);
+                    $mock->shouldReceive('getDescription')->andReturn(null);
+                    $mock->shouldReceive('getTags')->andReturn(null);
+                    $mock->shouldReceive('getQuery')->andReturn(null);
+                    $mock->shouldReceive('getDeprecated')->andReturn(null);
+                    $mock->shouldReceive('getSideEffects')->andReturn(null);
+                    $mock->shouldReceive('getExamples')->andReturn(null);
+                    $mock->shouldReceive('getLinks')->andReturn(null);
+                    $mock->shouldReceive('getSimulations')->andReturn(null);
+                    $mock->shouldReceive('getExternalDocs')->andReturn(null);
+                    $mock->shouldReceive('getExtensions')->andReturn(null);
+                });
+
+                $repository = new FunctionRepository([$mockFunction]);
 
                 ServerFacade::shouldReceive('getFunctionRepository')->andReturn($repository);
                 ServerFacade::shouldReceive('getName')->andReturn('Test Server');
@@ -279,7 +319,27 @@ describe('DescribeFunction', function (): void {
 
             test('includes all standard Forrst error codes', function (): void {
                 // Arrange
-                $repository = new FunctionRepository([]);
+                $mockFunction = mock(FunctionInterface::class, function (MockInterface $mock): void {
+                    $mock->shouldReceive('getUrn')->andReturn('urn:cline:forrst:fn:test:minimal');
+                    $mock->shouldReceive('getVersion')->andReturn('1.0.0');
+                    $mock->shouldReceive('getSummary')->andReturn('Minimal test function');
+                    $mock->shouldReceive('getArguments')->andReturn([]);
+                    $mock->shouldReceive('getResult')->andReturn(null);
+                    $mock->shouldReceive('getErrors')->andReturn([]);
+                    $mock->shouldReceive('isDiscoverable')->andReturn(true);
+                    $mock->shouldReceive('getDescription')->andReturn(null);
+                    $mock->shouldReceive('getTags')->andReturn(null);
+                    $mock->shouldReceive('getQuery')->andReturn(null);
+                    $mock->shouldReceive('getDeprecated')->andReturn(null);
+                    $mock->shouldReceive('getSideEffects')->andReturn(null);
+                    $mock->shouldReceive('getExamples')->andReturn(null);
+                    $mock->shouldReceive('getLinks')->andReturn(null);
+                    $mock->shouldReceive('getSimulations')->andReturn(null);
+                    $mock->shouldReceive('getExternalDocs')->andReturn(null);
+                    $mock->shouldReceive('getExtensions')->andReturn(null);
+                });
+
+                $repository = new FunctionRepository([$mockFunction]);
 
                 ServerFacade::shouldReceive('getFunctionRepository')->andReturn($repository);
                 ServerFacade::shouldReceive('getName')->andReturn('Test Server');
@@ -376,7 +436,27 @@ describe('DescribeFunction', function (): void {
 
             test('generates valid Forrst Discovery document structure', function (): void {
                 // Arrange
-                $repository = new FunctionRepository([]);
+                $mockFunction = mock(FunctionInterface::class, function (MockInterface $mock): void {
+                    $mock->shouldReceive('getUrn')->andReturn('urn:cline:forrst:fn:test:minimal');
+                    $mock->shouldReceive('getVersion')->andReturn('1.0.0');
+                    $mock->shouldReceive('getSummary')->andReturn('Minimal test function');
+                    $mock->shouldReceive('getArguments')->andReturn([]);
+                    $mock->shouldReceive('getResult')->andReturn(null);
+                    $mock->shouldReceive('getErrors')->andReturn([]);
+                    $mock->shouldReceive('isDiscoverable')->andReturn(true);
+                    $mock->shouldReceive('getDescription')->andReturn(null);
+                    $mock->shouldReceive('getTags')->andReturn(null);
+                    $mock->shouldReceive('getQuery')->andReturn(null);
+                    $mock->shouldReceive('getDeprecated')->andReturn(null);
+                    $mock->shouldReceive('getSideEffects')->andReturn(null);
+                    $mock->shouldReceive('getExamples')->andReturn(null);
+                    $mock->shouldReceive('getLinks')->andReturn(null);
+                    $mock->shouldReceive('getSimulations')->andReturn(null);
+                    $mock->shouldReceive('getExternalDocs')->andReturn(null);
+                    $mock->shouldReceive('getExtensions')->andReturn(null);
+                });
+
+                $repository = new FunctionRepository([$mockFunction]);
 
                 ServerFacade::shouldReceive('getFunctionRepository')->andReturn($repository);
                 ServerFacade::shouldReceive('getName')->andReturn('Test Server');
