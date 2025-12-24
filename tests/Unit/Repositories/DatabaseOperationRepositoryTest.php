@@ -118,6 +118,7 @@ describe('DatabaseOperationRepository', function (): void {
                 'id' => 'op_update2',
                 'function' => 'urn:cline:forrst:fn:test:function',
                 'status' => 'processing',
+                    'started_at' => now(),
                 'expires_at' => now()->addDays(30),
             ]);
 
@@ -146,6 +147,7 @@ describe('DatabaseOperationRepository', function (): void {
                 'id' => 'op_update3',
                 'function' => 'urn:cline:forrst:fn:test:function',
                 'status' => 'processing',
+                    'started_at' => now(),
                 'expires_at' => now()->addDays(30),
             ]);
 

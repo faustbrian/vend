@@ -307,6 +307,7 @@ describe('Operation Model', function (): void {
                 'id' => 'op-zero',
                 'function' => 'test.func',
                 'status' => 'processing',
+                    'started_at' => now(),
                 'progress' => 0.0,
             ]);
 
@@ -323,6 +324,7 @@ describe('Operation Model', function (): void {
                 'id' => 'op-complete',
                 'function' => 'test.func',
                 'status' => 'processing',
+                    'started_at' => now(),
                 'progress' => 1.0,
             ]);
 

@@ -433,6 +433,7 @@ describe('OperationListFunction', function (): void {
                     'urn:cline:forrst:ext:async:fn:list',
                     [
                         'status' => 'processing',
+                    'started_at' => now(),
                         'function' => 'data.export',
                         'limit' => 10,
                         'cursor' => 'cursor-123',
