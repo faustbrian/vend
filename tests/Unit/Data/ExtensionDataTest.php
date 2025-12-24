@@ -163,8 +163,7 @@ describe('ExtensionData', function (): void {
             expect($array)->toBe([
                 'urn' => 'urn:cline:forrst:ext:tracing',
                 'options' => ['trace_id' => 'tr-123'],
-                'data' => ['span_id' => 'sp-456'],
-            ]);
+            ])->and($array)->not->toHaveKey('data');
         });
     });
 
