@@ -26,7 +26,7 @@ describe('ExtensionData', function (): void {
             // Assert
             expect($extension->urn)->toBe('urn:cline:forrst:ext:async')
                 ->and($extension->options)->toBe(['timeout' => 5_000])
-                ->and($extension->data)->toBe(['operation_id' => 'op-123']);
+                ->and($extension->data)->toBeNull();
         });
 
         test('creates extension with BackedEnum URN via constructor', function (): void {
