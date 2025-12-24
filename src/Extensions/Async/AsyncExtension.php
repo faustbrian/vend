@@ -421,32 +421,20 @@ final class AsyncExtension extends AbstractExtension implements ProvidesFunction
         $operation = $this->operations->find($operationId);
 
         if (!$operation instanceof OperationData) {
-            throw new OperationNotFoundException(sprintf(
-                'Cannot mark operation %s as processing: operation not found',
-                $operationId,
-            ));
+            throw OperationNotFoundException::forOperation($operationId, 'mark as processing');
         }
 
         // Validate state transitions
         if ($operation->status === OperationStatus::Completed) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot mark operation %s as processing: already completed',
-                $operationId,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'mark as processing', $operation->status);
         }
 
         if ($operation->status === OperationStatus::Failed) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot mark operation %s as processing: operation failed',
-                $operationId,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'mark as processing', $operation->status);
         }
 
         if ($operation->status === OperationStatus::Cancelled) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot mark operation %s as processing: operation was cancelled',
-                $operationId,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'mark as processing', $operation->status);
         }
 
         $updated = new OperationData(
@@ -482,25 +470,16 @@ final class AsyncExtension extends AbstractExtension implements ProvidesFunction
         $operation = $this->operations->find($operationId);
 
         if (!$operation instanceof OperationData) {
-            throw new OperationNotFoundException(sprintf(
-                'Cannot complete operation %s: operation not found',
-                $operationId,
-            ));
+            throw OperationNotFoundException::forOperation($operationId, 'complete');
         }
 
         // Validate state transitions
         if ($operation->status === OperationStatus::Completed) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot complete operation %s: already completed',
-                $operationId,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'complete', $operation->status);
         }
 
         if ($operation->status === OperationStatus::Cancelled) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot complete operation %s: operation was cancelled',
-                $operationId,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'complete', $operation->status);
         }
 
         $updated = new OperationData(
@@ -538,32 +517,20 @@ final class AsyncExtension extends AbstractExtension implements ProvidesFunction
         $operation = $this->operations->find($operationId);
 
         if (!$operation instanceof OperationData) {
-            throw new OperationNotFoundException(sprintf(
-                'Cannot fail operation %s: operation not found',
-                $operationId,
-            ));
+            throw OperationNotFoundException::forOperation($operationId, 'fail');
         }
 
         // Validate state transitions
         if ($operation->status === OperationStatus::Completed) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot fail operation %s: already completed',
-                $operationId,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'fail', $operation->status);
         }
 
         if ($operation->status === OperationStatus::Failed) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot fail operation %s: already failed',
-                $operationId,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'fail', $operation->status);
         }
 
         if ($operation->status === OperationStatus::Cancelled) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot fail operation %s: operation was cancelled',
-                $operationId,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'fail', $operation->status);
         }
 
         $updated = new OperationData(
@@ -603,19 +570,12 @@ final class AsyncExtension extends AbstractExtension implements ProvidesFunction
         $operation = $this->operations->find($operationId);
 
         if (!$operation instanceof OperationData) {
-            throw new OperationNotFoundException(sprintf(
-                'Cannot update progress for operation %s: operation not found',
-                $operationId,
-            ));
+            throw OperationNotFoundException::forOperation($operationId, 'update progress');
         }
 
         // Validate operation is in a state where progress updates make sense
         if (!in_array($operation->status, [OperationStatus::Pending, OperationStatus::Processing], true)) {
-            throw new InvalidOperationStateException(sprintf(
-                'Cannot update progress for operation %s: operation is in %s state',
-                $operationId,
-                $operation->status->value,
-            ));
+            throw InvalidOperationStateException::cannotTransition($operationId, 'update progress', $operation->status);
         }
 
         // Validate progress doesn't decrease

@@ -11,6 +11,8 @@ namespace Cline\Forrst\Extensions\Async\Exceptions;
 
 use RuntimeException;
 
+use function sprintf;
+
 /**
  * Exception thrown when an operation cannot be found.
  *
@@ -22,4 +24,20 @@ use RuntimeException;
  *
  * @author Brian Faust <brian@cline.sh>
  */
-final class OperationNotFoundException extends RuntimeException {}
+final class OperationNotFoundException extends RuntimeException
+{
+    /**
+     * Create exception for operation that cannot be found.
+     *
+     * @param string $operationId Operation ID that was not found
+     * @param string $context     Context describing what action was attempted
+     */
+    public static function forOperation(string $operationId, string $context): self
+    {
+        return new self(sprintf(
+            'Cannot %s: operation %s not found',
+            $context,
+            $operationId,
+        ));
+    }
+}

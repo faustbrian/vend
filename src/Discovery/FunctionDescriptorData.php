@@ -137,7 +137,7 @@ final class FunctionDescriptorData extends Data
             throw EmptyFieldException::forField('name');
         }
 
-        if (!preg_match('/^urn:[a-z][a-z0-9-]*:forrst:(?:ext:[a-z][a-z0-9-]*:)?fn:[a-z][a-z0-9:.]*$/i', $name)) {
+        if (!preg_match('/^urn:[a-z][a-z0-9-]*:forrst:(?:ext:[a-z][a-z0-9-]*:)?fn:[a-z][a-z0-9:.-]*$/i', $name)) {
             throw InvalidFunctionNameException::forName(
                 $name,
                 "Expected format: 'urn:namespace:forrst:ext:extension:fn:name' or 'urn:namespace:forrst:fn:name'",

@@ -15,7 +15,10 @@ use Cline\Forrst\Events\ExtensionEvent;
 use Cline\Forrst\Events\FunctionExecuted;
 use Cline\Forrst\Events\RequestValidated;
 use Cline\Forrst\Events\SendingResponse;
-use Cline\Forrst\Exceptions\InvalidExtensionConfigurationException;
+use Cline\Forrst\Exceptions\EventHandlerMethodNotCallableException;
+use Cline\Forrst\Exceptions\EventHandlerMethodNotFoundException;
+use Cline\Forrst\Exceptions\InvalidEventHandlerMethodException;
+use Cline\Forrst\Exceptions\InvalidEventHandlerPriorityException;
 use Cline\Forrst\Facades\Server;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -239,7 +242,10 @@ final class ExtensionEventSubscriber
      * - Method exists on the extension class
      * - Method is publicly callable
      *
-     * @throws InvalidExtensionConfigurationException If any subscription is invalid
+     * @throws InvalidEventHandlerPriorityException If priority is not an integer
+     * @throws InvalidEventHandlerMethodException If method name is not a string
+     * @throws EventHandlerMethodNotFoundException If method does not exist
+     * @throws EventHandlerMethodNotCallableException If method is not public
      */
     private function buildListenerMap(): void
     {
@@ -284,7 +290,10 @@ final class ExtensionEventSubscriber
      * @param mixed              $priority       Priority value (must be int)
      * @param mixed              $method         Method name (must be string and callable)
      *
-     * @throws InvalidExtensionConfigurationException If validation fails
+     * @throws InvalidEventHandlerPriorityException If priority is not an integer
+     * @throws InvalidEventHandlerMethodException If method name is not a string
+     * @throws EventHandlerMethodNotFoundException If method does not exist
+     * @throws EventHandlerMethodNotCallableException If method is not public
      */
     private function validateSubscription(
         ExtensionInterface $extension,
@@ -296,7 +305,7 @@ final class ExtensionEventSubscriber
     ): void {
         // Validate priority is an integer
         if (!is_int($priority)) {
-            throw InvalidExtensionConfigurationException::invalidPriority(
+            throw InvalidEventHandlerPriorityException::forEvent(
                 $extensionUrn,
                 $eventClass,
                 $priority,
@@ -305,7 +314,7 @@ final class ExtensionEventSubscriber
 
         // Validate method is a string
         if (!is_string($method)) {
-            throw InvalidExtensionConfigurationException::invalidMethod(
+            throw InvalidEventHandlerMethodException::forEvent(
                 $extensionUrn,
                 $eventClass,
                 $method,
@@ -314,7 +323,7 @@ final class ExtensionEventSubscriber
 
         // Validate method exists on extension
         if (!method_exists($extension, $method)) {
-            throw InvalidExtensionConfigurationException::methodNotFound(
+            throw EventHandlerMethodNotFoundException::forEvent(
                 $extensionUrn,
                 $eventClass,
                 $method,
@@ -326,7 +335,7 @@ final class ExtensionEventSubscriber
         $reflection = new ReflectionMethod($extension, $method);
 
         if (!$reflection->isPublic()) {
-            throw InvalidExtensionConfigurationException::methodNotCallable(
+            throw EventHandlerMethodNotCallableException::forEvent(
                 $extensionUrn,
                 $eventClass,
                 $method,

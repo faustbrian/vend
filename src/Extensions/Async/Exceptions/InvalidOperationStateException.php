@@ -9,7 +9,10 @@
 
 namespace Cline\Forrst\Extensions\Async\Exceptions;
 
+use Cline\Forrst\Data\OperationStatus;
 use RuntimeException;
+
+use function sprintf;
 
 /**
  * Exception thrown when an operation state transition is invalid.
@@ -23,4 +26,22 @@ use RuntimeException;
  *
  * @author Brian Faust <brian@cline.sh>
  */
-final class InvalidOperationStateException extends RuntimeException {}
+final class InvalidOperationStateException extends RuntimeException
+{
+    /**
+     * Create exception for invalid state transition.
+     *
+     * @param string          $operationId     Operation ID
+     * @param string          $attemptedAction What action was attempted
+     * @param OperationStatus $currentStatus   Current operation status
+     */
+    public static function cannotTransition(string $operationId, string $attemptedAction, OperationStatus $currentStatus): self
+    {
+        return new self(sprintf(
+            'Cannot %s operation %s: %s',
+            $attemptedAction,
+            $operationId,
+            $currentStatus->value,
+        ));
+    }
+}

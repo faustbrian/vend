@@ -47,7 +47,7 @@ final class DescribeFunction extends AbstractFunction implements UnwrappedRespon
     /**
      * Current Discovery specification version.
      */
-    public const string DISCOVERY_VERSION = '0.1';
+    public const string DISCOVERY_VERSION = '0.1.0';
 
     /**
      * Keys that must be preserved even when empty.
