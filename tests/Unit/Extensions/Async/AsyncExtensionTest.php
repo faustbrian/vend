@@ -16,6 +16,7 @@ use Cline\Forrst\Data\OperationStatus;
 use Cline\Forrst\Data\RequestObjectData;
 use Cline\Forrst\Enums\ErrorCode;
 use Cline\Forrst\Extensions\Async\AsyncExtension;
+use Cline\Forrst\Extensions\Async\Exceptions\OperationNotFoundException;
 use Cline\Forrst\Extensions\ExtensionUrn;
 use Mockery as m;
 
@@ -179,7 +180,7 @@ describe('AsyncExtension', function (): void {
                 ->and($poll)->toHaveKey('version')
                 ->and($poll)->toHaveKey('arguments')
                 ->and($poll['function'])->toBe('urn:cline:forrst:ext:async:fn:status')
-                ->and($poll['version'])->toBe('1.0.0')
+                ->and($poll['version'])->toBe('1')
                 ->and($poll['arguments'])->toHaveKey('operation_id');
         });
 
@@ -335,6 +336,7 @@ describe('AsyncExtension', function (): void {
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: ['key' => 'value'],
+                startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
             );
 
             $repository = m::mock(OperationRepositoryInterface::class);
@@ -421,76 +423,68 @@ describe('AsyncExtension', function (): void {
             expect($result)->toBeNull();
         });
 
-        test('markProcessing does nothing when operation not found', function (): void {
+        test('markProcessing throws exception when operation not found', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('nonexistent')
+                ->with('op_000000000000000000000001')
                 ->andReturn(null);
             $repository->shouldNotReceive('save');
 
             $extension = new AsyncExtension($repository);
 
-            // Act
-            $extension->markProcessing('nonexistent');
-
-            // Assert - No exception thrown, save not called
-            expect(true)->toBeTrue();
+            // Act & Assert
+            expect(fn (): mixed => $extension->markProcessing('op_000000000000000000000001'))
+                ->toThrow(OperationNotFoundException::class);
         });
 
-        test('complete does nothing when operation not found', function (): void {
+        test('complete throws exception when operation not found', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('nonexistent')
+                ->with('op_000000000000000000000001')
                 ->andReturn(null);
             $repository->shouldNotReceive('save');
 
             $extension = new AsyncExtension($repository);
 
-            // Act
-            $extension->complete('nonexistent', 'result');
-
-            // Assert - No exception thrown, save not called
-            expect(true)->toBeTrue();
+            // Act & Assert
+            expect(fn (): mixed => $extension->complete('op_000000000000000000000001', 'result'))
+                ->toThrow(OperationNotFoundException::class);
         });
 
-        test('fail does nothing when operation not found', function (): void {
+        test('fail throws exception when operation not found', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('nonexistent')
+                ->with('op_000000000000000000000001')
                 ->andReturn(null);
             $repository->shouldNotReceive('save');
 
             $extension = new AsyncExtension($repository);
 
-            // Act
-            $extension->fail('nonexistent', []);
-
-            // Assert - No exception thrown, save not called
-            expect(true)->toBeTrue();
+            // Act & Assert
+            expect(fn (): mixed => $extension->fail('op_000000000000000000000001', []))
+                ->toThrow(OperationNotFoundException::class);
         });
 
-        test('updateProgress does nothing when operation not found', function (): void {
+        test('updateProgress throws exception when operation not found', function (): void {
             // Arrange
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('nonexistent')
+                ->with('op_000000000000000000000001')
                 ->andReturn(null);
             $repository->shouldNotReceive('save');
 
             $extension = new AsyncExtension($repository);
 
-            // Act
-            $extension->updateProgress('nonexistent', 0.5);
-
-            // Assert - No exception thrown, save not called
-            expect(true)->toBeTrue();
+            // Act & Assert
+            expect(fn (): mixed => $extension->updateProgress('op_000000000000000000000001', 0.5))
+                ->toThrow(OperationNotFoundException::class);
         });
 
         test('updateProgress clamps progress above 1.0 to 1.0', function (): void {
@@ -499,6 +493,7 @@ describe('AsyncExtension', function (): void {
                 id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
+                startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
             );
 
             $repository = m::mock(OperationRepositoryInterface::class);
@@ -525,6 +520,7 @@ describe('AsyncExtension', function (): void {
                 id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
+                startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
             );
 
             $repository = m::mock(OperationRepositoryInterface::class);
@@ -552,6 +548,7 @@ describe('AsyncExtension', function (): void {
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: null,
+                startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
             );
 
             $repository = m::mock(OperationRepositoryInterface::class);
@@ -672,6 +669,7 @@ describe('AsyncExtension', function (): void {
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: ['key' => 'value'],
+                startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
             );
 
             $repository = m::mock(OperationRepositoryInterface::class);
@@ -699,6 +697,7 @@ describe('AsyncExtension', function (): void {
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: ['key' => 'value'],
+                startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
             );
 
             $repository = m::mock(OperationRepositoryInterface::class);
@@ -726,6 +725,7 @@ describe('AsyncExtension', function (): void {
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 progress: 0.6,
+                startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
             );
 
             $repository = m::mock(OperationRepositoryInterface::class);
