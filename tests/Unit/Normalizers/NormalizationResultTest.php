@@ -8,6 +8,7 @@
  */
 
 use Cline\Forrst\Data\ResourceObjectData;
+use Cline\Forrst\Exceptions\InvalidFieldValueException;
 use Cline\Forrst\Normalizers\NormalizationResult;
 
 describe('NormalizationResult', function (): void {
