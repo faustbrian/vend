@@ -155,49 +155,6 @@ describe('LocaleExtension', function (): void {
             expect(LocaleExtension::DEFAULT_TIMEZONE)->toBe('UTC');
         });
 
-        test('getLanguage returns default before any request', function (): void {
-            // Arrange
-            $extension = new LocaleExtension();
-
-            // Act
-            $language = $extension->getLanguage();
-
-            // Assert
-            expect($language)->toBe(LocaleExtension::DEFAULT_LANGUAGE);
-        });
-
-        test('getTimezone returns null before any request', function (): void {
-            // Arrange
-            $extension = new LocaleExtension();
-
-            // Act
-            $timezone = $extension->getTimezone();
-
-            // Assert
-            expect($timezone)->toBeNull();
-        });
-
-        test('getCurrency returns null before any request', function (): void {
-            // Arrange
-            $extension = new LocaleExtension();
-
-            // Act
-            $currency = $extension->getCurrency();
-
-            // Assert
-            expect($currency)->toBeNull();
-        });
-
-        test('wasFallbackUsed returns false before any request', function (): void {
-            // Arrange
-            $extension = new LocaleExtension();
-
-            // Act
-            $fallbackUsed = $extension->wasFallbackUsed();
-
-            // Assert
-            expect($fallbackUsed)->toBeFalse();
-        });
     });
 
     describe('Sad Paths', function (): void {
@@ -253,10 +210,10 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('de')
-                    ->and($extension->getTimezone())->toBe('Europe/Berlin')
-                    ->and($extension->getCurrency())->toBe('EUR')
-                    ->and($extension->wasFallbackUsed())->toBeFalse();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('de')
+                    ->and($event->request->meta['locale_resolved']['timezone'])->toBe('Europe/Berlin')
+                    ->and($event->request->meta['locale_resolved']['currency'])->toBe('EUR')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeFalse();
             });
 
             test('onRequestValidated handles exact language match without fallback', function (): void {
@@ -278,8 +235,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('zh-Hans')
-                    ->and($extension->wasFallbackUsed())->toBeFalse();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('zh-Hans')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeFalse();
             });
 
             test('onRequestValidated does nothing when extension not present', function (): void {
@@ -295,11 +252,8 @@ describe('LocaleExtension', function (): void {
                 $event = new RequestValidated($request);
                 $extension->onRequestValidated($event);
 
-                // Assert - defaults remain
-                expect($extension->getLanguage())->toBe('en')
-                    ->and($extension->getTimezone())->toBeNull()
-                    ->and($extension->getCurrency())->toBeNull()
-                    ->and($extension->wasFallbackUsed())->toBeFalse();
+                // Assert - locale_resolved not set when extension not present
+                expect($event->request->meta)->not->toHaveKey('locale_resolved');
             });
 
             test('onFunctionExecuted adds locale metadata to response', function (): void {
@@ -470,8 +424,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('en')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('en')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
 
             test('onRequestValidated rejects invalid timezone', function (): void {
@@ -494,7 +448,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getTimezone())->toBeNull();
+                expect($event->request->meta['locale_resolved']['timezone'])->toBeNull();
             });
 
             test('onRequestValidated rejects invalid currency code', function (): void {
@@ -517,7 +471,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
 
             test('onRequestValidated normalizes currency to uppercase', function (): void {
@@ -540,7 +494,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBe('USD');
+                expect($event->request->meta['locale_resolved']['currency'])->toBe('USD');
             });
         });
 
@@ -562,10 +516,10 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('en')
-                    ->and($extension->wasFallbackUsed())->toBeTrue()
-                    ->and($extension->getTimezone())->toBeNull()
-                    ->and($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('en')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue()
+                    ->and($event->request->meta['locale_resolved']['timezone'])->toBeNull()
+                    ->and($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
 
             test('onRequestValidated handles null extension options', function (): void {
@@ -585,8 +539,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('en')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('en')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
 
             test('onRequestValidated accepts null for optional timezone', function (): void {
@@ -609,7 +563,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getTimezone())->toBeNull();
+                expect($event->request->meta['locale_resolved']['timezone'])->toBeNull();
             });
 
             test('onRequestValidated accepts null for optional currency', function (): void {
@@ -632,7 +586,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
         });
     });
@@ -658,8 +612,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('de')
-                    ->and($extension->wasFallbackUsed())->toBeFalse();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('de')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeFalse();
             });
 
             test('resolves base language when specific variant not supported', function (): void {
@@ -681,8 +635,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert - base language 'de' matches, so 'de-DE' is accepted as-is
-                expect($extension->getLanguage())->toBe('de-DE')
-                    ->and($extension->wasFallbackUsed())->toBeFalse();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('de-DE')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeFalse();
             });
 
             test('resolves progressively shorter language tags', function (): void {
@@ -704,8 +658,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('zh-Hans')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('zh-Hans')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
 
             test('uses first fallback language when requested language not supported', function (): void {
@@ -728,8 +682,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('fr')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('fr')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
 
             test('tries multiple fallback languages until match found', function (): void {
@@ -752,8 +706,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('es')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('es')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
 
             test('uses shorter version of fallback language when exact not supported', function (): void {
@@ -776,8 +730,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert - base language 'de' matches, so fallback 'de-DE' is used as-is
-                expect($extension->getLanguage())->toBe('de-DE')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('de-DE')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
 
             test('defaults to en when no languages match', function (): void {
@@ -800,8 +754,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('en')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('en')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
         });
 
@@ -826,8 +780,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('en')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('en')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
 
             test('handles single-character language code', function (): void {
@@ -849,8 +803,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getLanguage())->toBe('en')
-                    ->and($extension->wasFallbackUsed())->toBeTrue();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('en')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeTrue();
             });
 
             test('handles language tag with multiple hyphens', function (): void {
@@ -872,8 +826,8 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert - base language 'de' matches, so full tag is accepted as-is
-                expect($extension->getLanguage())->toBe('de-DE-u-co-phonebk')
-                    ->and($extension->wasFallbackUsed())->toBeFalse();
+                expect($event->request->meta['locale_resolved']['language'])->toBe('de-DE-u-co-phonebk')
+                    ->and($event->request->meta['locale_resolved']['fallback_used'])->toBeFalse();
             });
         });
     });
@@ -909,7 +863,7 @@ describe('LocaleExtension', function (): void {
                     $event = new RequestValidated($request);
                     $extension->onRequestValidated($event);
 
-                    expect($extension->getTimezone())->toBe($timezone);
+                    expect($event->request->meta['locale_resolved']['timezone'])->toBe($timezone);
                 }
             });
 
@@ -933,7 +887,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getTimezone())->toBe('Etc/GMT+5');
+                expect($event->request->meta['locale_resolved']['timezone'])->toBe('Etc/GMT+5');
             });
         });
 
@@ -958,7 +912,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getTimezone())->toBeNull();
+                expect($event->request->meta['locale_resolved']['timezone'])->toBeNull();
             });
 
             test('rejects empty timezone string', function (): void {
@@ -981,7 +935,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getTimezone())->toBeNull();
+                expect($event->request->meta['locale_resolved']['timezone'])->toBeNull();
             });
 
             test('rejects malformed timezone with special characters', function (): void {
@@ -1004,7 +958,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getTimezone())->toBeNull();
+                expect($event->request->meta['locale_resolved']['timezone'])->toBeNull();
             });
         });
 
@@ -1029,7 +983,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert - Deprecated but still valid
-                expect($extension->getTimezone())->toBe('US/Eastern');
+                expect($event->request->meta['locale_resolved']['timezone'])->toBe('US/Eastern');
             });
         });
     });
@@ -1065,7 +1019,7 @@ describe('LocaleExtension', function (): void {
                     $event = new RequestValidated($request);
                     $extension->onRequestValidated($event);
 
-                    expect($extension->getCurrency())->toBe($expected);
+                    expect($event->request->meta['locale_resolved']['currency'])->toBe($expected);
                 }
             });
 
@@ -1089,7 +1043,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBe('EUR');
+                expect($event->request->meta['locale_resolved']['currency'])->toBe('EUR');
             });
 
             test('normalizes mixed-case currency codes to uppercase', function (): void {
@@ -1112,7 +1066,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBe('GBP');
+                expect($event->request->meta['locale_resolved']['currency'])->toBe('GBP');
             });
         });
 
@@ -1137,7 +1091,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
 
             test('rejects currency codes that are too short', function (): void {
@@ -1160,7 +1114,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
 
             test('rejects currency codes that are too long', function (): void {
@@ -1183,7 +1137,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
 
             test('rejects empty currency string', function (): void {
@@ -1206,7 +1160,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
 
             test('rejects currency codes with numbers', function (): void {
@@ -1229,7 +1183,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
 
             test('rejects currency codes with special characters', function (): void {
@@ -1252,7 +1206,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBeNull();
+                expect($event->request->meta['locale_resolved']['currency'])->toBeNull();
             });
         });
 
@@ -1277,7 +1231,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert
-                expect($extension->getCurrency())->toBe('XAF');
+                expect($event->request->meta['locale_resolved']['currency'])->toBe('XAF');
             });
 
             test('validates Swiss Franc currency code', function (): void {
@@ -1300,7 +1254,7 @@ describe('LocaleExtension', function (): void {
                 $extension->onRequestValidated($event);
 
                 // Assert - CHF is valid ISO 4217 code for Swiss Franc
-                expect($extension->getCurrency())->toBe('CHF');
+                expect($event->request->meta['locale_resolved']['currency'])->toBe('CHF');
             });
         });
     });
