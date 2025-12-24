@@ -227,7 +227,7 @@ describe('ServerVariableData', function (): void {
             expect(fn (): ServerVariableData => new ServerVariableData(
                 default: 'test',
                 enum: [],
-            ))->toThrow(InvalidArgumentException::class, 'Enum array cannot be empty');
+            ))->toThrow(InvalidArgumentException::class, 'enum cannot be empty');
         });
 
         test('rejects non-string enum values', function (): void {
@@ -297,7 +297,7 @@ describe('ServerVariableData', function (): void {
             expect(fn (): ServerVariableData => new ServerVariableData(
                 default: 'test',
                 enum: ['test', 'valid', 123, 'another'],
-            ))->toThrow(InvalidArgumentException::class, 'Enum value at index 2 must be string');
+            ))->toThrow(InvalidArgumentException::class, 'enum[2] must be string, got integer');
         });
 
         test('validates enum before checking default is in enum', function (): void {
@@ -306,7 +306,7 @@ describe('ServerVariableData', function (): void {
             expect(fn (): ServerVariableData => new ServerVariableData(
                 default: 'test',
                 enum: [123, 'test'],
-            ))->toThrow(InvalidArgumentException::class, 'Enum value at index 0 must be string');
+            ))->toThrow(InvalidArgumentException::class, 'enum[0] must be string, got integer');
         });
     });
 });
