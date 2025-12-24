@@ -93,7 +93,7 @@ describe('OperationStatusFunction', function (): void {
                     ->and($result[0]->name)->toBe('operation_id')
                     ->and($result[0]->schema['type'])->toBe('string')
                     ->and($result[0]->required)->toBeTrue()
-                    ->and($result[0]->description)->toBe('Operation ID to check');
+                    ->and($result[0]->description)->toBe('Unique operation identifier');
             });
         });
 
@@ -178,7 +178,7 @@ describe('OperationStatusFunction', function (): void {
             test('returns operation data for pending operation', function (): void {
                 // Arrange
                 $operation = new OperationData(
-                    'op-123',
+                    'op_123456789012345678901',
                     'urn:app:forrst:fn:users:create',
                     version: '1.0.0',
                     status: OperationStatus::Pending,
@@ -186,7 +186,7 @@ describe('OperationStatusFunction', function (): void {
                 );
 
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock) use ($operation): void {
-                    $mock->shouldReceive('find')->with('op-123')->andReturn($operation);
+                    $mock->shouldReceive('find')->with('op_123456789012345678901', null)->andReturn($operation);
                 });
 
                 $function = new OperationStatusFunction($repository);
@@ -201,7 +201,7 @@ describe('OperationStatusFunction', function (): void {
 
                 // Assert
                 expect($result)->toHaveKey('id')
-                    ->and($result['id'])->toBe('op-123')
+                    ->and($result['id'])->toBe('op_123456789012345678901')
                     ->and($result)->toHaveKey('status')
                     ->and($result['status'])->toBe('pending')
                     ->and($result)->toHaveKey('function')
@@ -211,7 +211,7 @@ describe('OperationStatusFunction', function (): void {
             test('returns operation data for processing operation with progress', function (): void {
                 // Arrange
                 $operation = new OperationData(
-                    'op-456',
+                    'op_456789012345678901234',
                     'data.export',
                     version: '1.0.0',
                     status: OperationStatus::Processing,
@@ -220,7 +220,7 @@ describe('OperationStatusFunction', function (): void {
                 );
 
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock) use ($operation): void {
-                    $mock->shouldReceive('find')->with('op-456')->andReturn($operation);
+                    $mock->shouldReceive('find')->with('op_456789012345678901234', null)->andReturn($operation);
                 });
 
                 $function = new OperationStatusFunction($repository);
@@ -242,7 +242,7 @@ describe('OperationStatusFunction', function (): void {
             test('returns operation data for completed operation with result', function (): void {
                 // Arrange
                 $operation = new OperationData(
-                    'op-789',
+                    'op_789012345678901234567',
                     'orders.process',
                     version: '1.0.0',
                     status: OperationStatus::Completed,
@@ -252,7 +252,7 @@ describe('OperationStatusFunction', function (): void {
                 );
 
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock) use ($operation): void {
-                    $mock->shouldReceive('find')->with('op-789')->andReturn($operation);
+                    $mock->shouldReceive('find')->with('op_789012345678901234567', null)->andReturn($operation);
                 });
 
                 $function = new OperationStatusFunction($repository);
@@ -276,7 +276,7 @@ describe('OperationStatusFunction', function (): void {
             test('returns operation data for failed operation with errors', function (): void {
                 // Arrange
                 $operation = new OperationData(
-                    'op-999',
+                    'op_999012345678901234567',
                     'payment.process',
                     version: '1.0.0',
                     status: OperationStatus::Failed,
@@ -291,7 +291,7 @@ describe('OperationStatusFunction', function (): void {
                 );
 
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock) use ($operation): void {
-                    $mock->shouldReceive('find')->with('op-999')->andReturn($operation);
+                    $mock->shouldReceive('find')->with('op_999012345678901234567', null)->andReturn($operation);
                 });
 
                 $function = new OperationStatusFunction($repository);
@@ -315,7 +315,7 @@ describe('OperationStatusFunction', function (): void {
             test('returns operation data for cancelled operation', function (): void {
                 // Arrange
                 $operation = new OperationData(
-                    'op-111',
+                    'op_111234567890123456789',
                     'backup.create',
                     version: '1.0.0',
                     status: OperationStatus::Cancelled,
@@ -324,7 +324,7 @@ describe('OperationStatusFunction', function (): void {
                 );
 
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock) use ($operation): void {
-                    $mock->shouldReceive('find')->with('op-111')->andReturn($operation);
+                    $mock->shouldReceive('find')->with('op_111234567890123456789', null)->andReturn($operation);
                 });
 
                 $function = new OperationStatusFunction($repository);
@@ -349,13 +349,13 @@ describe('OperationStatusFunction', function (): void {
             test('handles operation with minimal fields', function (): void {
                 // Arrange
                 $operation = new OperationData(
-                    'op-min',
+                    'op_min0123456789012345',
                     'urn:cline:forrst:fn:test:function',
                     status: OperationStatus::Pending,
                 );
 
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock) use ($operation): void {
-                    $mock->shouldReceive('find')->with('op-min')->andReturn($operation);
+                    $mock->shouldReceive('find')->with('op_min0123456789012345', null)->andReturn($operation);
                 });
 
                 $function = new OperationStatusFunction($repository);
@@ -380,7 +380,7 @@ describe('OperationStatusFunction', function (): void {
             test('handles operation with all optional fields', function (): void {
                 // Arrange
                 $operation = new OperationData(
-                    'op-full',
+                    'op_full012345678901234',
                     'urn:cline:forrst:fn:test:function',
                     version: '2.0',
                     status: OperationStatus::Completed,
@@ -392,7 +392,7 @@ describe('OperationStatusFunction', function (): void {
                 );
 
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock) use ($operation): void {
-                    $mock->shouldReceive('find')->with('op-full')->andReturn($operation);
+                    $mock->shouldReceive('find')->with('op_full012345678901234', null)->andReturn($operation);
                 });
 
                 $function = new OperationStatusFunction($repository);
@@ -421,13 +421,13 @@ describe('OperationStatusFunction', function (): void {
             test('throws NotFoundException when operation does not exist', function (): void {
                 // Arrange
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock): void {
-                    $mock->shouldReceive('find')->with('nonexistent')->andReturn(null);
+                    $mock->shouldReceive('find')->with('op_000000000000000000000001', null)->andReturn(null);
                 });
 
                 $function = new OperationStatusFunction($repository);
                 $request = RequestObjectData::asRequest(
                     'urn:cline:forrst:ext:async:fn:status',
-                    ['operation_id' => 'op_nonexistent01234567890'],
+                    ['operation_id' => 'op_000000000000000000000001'],
                 );
                 $function->setRequest($request);
 
@@ -438,13 +438,13 @@ describe('OperationStatusFunction', function (): void {
             test('exception message includes operation ID', function (): void {
                 // Arrange
                 $repository = mock(OperationRepositoryInterface::class, function (MockInterface $mock): void {
-                    $mock->shouldReceive('find')->with('missing-123')->andReturn(null);
+                    $mock->shouldReceive('find')->with('op_000000000000000000000002', null)->andReturn(null);
                 });
 
                 $function = new OperationStatusFunction($repository);
                 $request = RequestObjectData::asRequest(
                     'urn:cline:forrst:ext:async:fn:status',
-                    ['operation_id' => 'missing-123'],
+                    ['operation_id' => 'op_000000000000000000000002'],
                 );
                 $function->setRequest($request);
 
@@ -453,7 +453,7 @@ describe('OperationStatusFunction', function (): void {
                     $function();
                     expect(true)->toBeFalse(); // Should not reach here
                 } catch (NotFoundException $notFoundException) {
-                    expect($notFoundException->getMessage())->toContain('missing-123');
+                    expect($notFoundException->getMessage())->toContain('op_000000000000000000000002');
                 }
             });
         });
