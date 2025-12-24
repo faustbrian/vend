@@ -41,21 +41,40 @@ use function strip_tags;
 final class DeprecatedData extends Data
 {
     /**
+     * The sunset date when this element will be removed.
+     */
+    public readonly ?DateTimeImmutable $sunset;
+
+    /**
      * Create a new deprecation information instance.
      *
-     * @param  null|string              $reason A human-readable explanation of why this element is deprecated.
-     *                                          Typically includes guidance on what to use instead, such as
-     *                                          "Use createUser() instead" or "Replaced by v2 authentication".
-     *                                          Helps developers migrate to supported alternatives.
-     * @param  null|DateTimeImmutable   $sunset The date when this deprecated element will be removed from the API.
-     *                                          Provides a timeline for migration planning. Null indicates no specific
-     *                                          removal date has been set, though the element should still not be used in new code.
+     * @param  null|string                       $reason A human-readable explanation of why this element is deprecated.
+     *                                                   Typically includes guidance on what to use instead, such as
+     *                                                   "Use createUser() instead" or "Replaced by v2 authentication".
+     *                                                   Helps developers migrate to supported alternatives.
+     * @param  null|DateTimeImmutable|string     $sunset The date when this deprecated element will be removed from the API.
+     *                                                   Can be a DateTimeImmutable object or ISO 8601 date string.
+     *                                                   Provides a timeline for migration planning. Null indicates no specific
+     *                                                   removal date has been set, though the element should still not be used in new code.
      * @throws InvalidArgumentException if sunset date is in the past or validation fails
      */
     public function __construct(
         public readonly ?string $reason = null,
-        public readonly ?DateTimeImmutable $sunset = null,
+        DateTimeImmutable|string|null $sunset = null,
     ) {
+        // Convert string sunset to DateTimeImmutable
+        if (is_string($sunset)) {
+            try {
+                $sunset = new DateTimeImmutable($sunset);
+            } catch (Exception) {
+                throw InvalidFieldValueException::forField(
+                    'sunset',
+                    sprintf('Invalid date format "%s". Expected ISO 8601 format (e.g., "2025-12-31")', $sunset),
+                );
+            }
+        }
+
+        $this->sunset = $sunset;
         $this->validateDeprecation();
     }
 
