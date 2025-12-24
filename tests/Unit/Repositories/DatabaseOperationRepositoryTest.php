@@ -25,17 +25,17 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository();
             Operation::query()->create([
-                'id' => 'op-find-1',
+                'id' => 'op_find1',
                 'function' => 'urn:cline:forrst:fn:test:function',
                 'status' => 'pending',
             ]);
 
             // Act
-            $result = $repository->find('op-find-1');
+            $result = $repository->find('op_find1');
 
             // Assert
             expect($result)->toBeInstanceOf(OperationData::class);
-            expect($result->id)->toBe('op-find-1');
+            expect($result->id)->toBe('op_find1');
             expect($result->function)->toBe('urn:cline:forrst:fn:test:function');
             expect($result->status)->toBe(OperationStatus::Pending);
         });
@@ -44,7 +44,7 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository();
             $operationData = new OperationData(
-                id: 'op-new-1',
+                id: 'op_new1',
                 function: 'urn:cline:forrst:fn:test:function',
                 version: '1.0.0',
                 status: OperationStatus::Pending,
@@ -54,9 +54,9 @@ describe('DatabaseOperationRepository', function (): void {
             $repository->save($operationData);
 
             // Assert
-            $operation = Operation::query()->find('op-new-1');
+            $operation = Operation::query()->find('op_new1');
             expect($operation)->not->toBeNull();
-            expect($operation->id)->toBe('op-new-1');
+            expect($operation->id)->toBe('op_new1');
             expect($operation->function)->toBe('urn:cline:forrst:fn:test:function');
             expect($operation->version)->toBe('1.0.0');
             expect($operation->status)->toBe(OperationStatus::Pending->value);
@@ -69,7 +69,7 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository(retentionDays: 7);
             $operationData = new OperationData(
-                id: 'op-new-2',
+                id: 'op_new2',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Pending,
             );
@@ -78,7 +78,7 @@ describe('DatabaseOperationRepository', function (): void {
             $repository->save($operationData);
 
             // Assert
-            $operation = Operation::query()->find('op-new-2');
+            $operation = Operation::query()->find('op_new2');
             expect($operation->expires_at)->not->toBeNull();
             expect(abs($operation->expires_at->diffInDays(now(), false)))->toBeGreaterThanOrEqual(6);
             expect(abs($operation->expires_at->diffInDays(now(), false)))->toBeLessThanOrEqual(7);
@@ -88,7 +88,7 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository();
             Operation::query()->create([
-                'id' => 'op-update-1',
+                'id' => 'op_update1',
                 'function' => 'urn:cline:forrst:fn:test:function',
                 'status' => 'pending',
                 'progress' => null,
@@ -96,7 +96,7 @@ describe('DatabaseOperationRepository', function (): void {
             ]);
 
             $operationData = new OperationData(
-                id: 'op-update-1',
+                id: 'op_update1',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 progress: 0.5,
@@ -106,7 +106,7 @@ describe('DatabaseOperationRepository', function (): void {
             $repository->save($operationData);
 
             // Assert
-            $operation = Operation::query()->find('op-update-1');
+            $operation = Operation::query()->find('op_update1');
             expect($operation->status)->toBe(OperationStatus::Processing->value);
             expect($operation->progress)->toBe(0.5);
         });
@@ -115,14 +115,14 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository();
             Operation::query()->create([
-                'id' => 'op-update-2',
+                'id' => 'op_update2',
                 'function' => 'urn:cline:forrst:fn:test:function',
                 'status' => 'processing',
                 'expires_at' => now()->addDays(30),
             ]);
 
             $operationData = new OperationData(
-                id: 'op-update-2',
+                id: 'op_update2',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Completed,
                 result: ['data' => 'value', 'count' => 42],
@@ -133,7 +133,7 @@ describe('DatabaseOperationRepository', function (): void {
             $repository->save($operationData);
 
             // Assert
-            $operation = Operation::query()->find('op-update-2');
+            $operation = Operation::query()->find('op_update2');
             expect($operation->status)->toBe(OperationStatus::Completed->value);
             expect($operation->result)->toBe(['data' => 'value', 'count' => 42]);
             expect($operation->completed_at)->not->toBeNull();
@@ -143,14 +143,14 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository();
             Operation::query()->create([
-                'id' => 'op-update-3',
+                'id' => 'op_update3',
                 'function' => 'urn:cline:forrst:fn:test:function',
                 'status' => 'processing',
                 'expires_at' => now()->addDays(30),
             ]);
 
             $operationData = new OperationData(
-                id: 'op-update-3',
+                id: 'op_update3',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Failed,
                 errors: [
@@ -165,7 +165,7 @@ describe('DatabaseOperationRepository', function (): void {
             $repository->save($operationData);
 
             // Assert
-            $operation = Operation::query()->find('op-update-3');
+            $operation = Operation::query()->find('op_update3');
             expect($operation->status)->toBe(OperationStatus::Failed->value);
             expect($operation->errors)->toHaveCount(1);
             expect($operation->errors[0]['code'])->toBe('INTERNAL_ERROR');
@@ -176,14 +176,14 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository();
             Operation::query()->create([
-                'id' => 'op-update-4',
+                'id' => 'op_update4',
                 'function' => 'urn:cline:forrst:fn:test:function',
                 'status' => 'pending',
                 'expires_at' => now()->addDays(30),
             ]);
 
             $operationData = new OperationData(
-                id: 'op-update-4',
+                id: 'op_update4',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: ['user_id' => '123', 'retry_count' => 2],
@@ -193,7 +193,7 @@ describe('DatabaseOperationRepository', function (): void {
             $repository->save($operationData);
 
             // Assert
-            $operation = Operation::query()->find('op-update-4');
+            $operation = Operation::query()->find('op_update4');
             expect($operation->metadata)->toBe(['user_id' => '123', 'retry_count' => 2]);
         });
 
@@ -201,16 +201,16 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository();
             Operation::query()->create([
-                'id' => 'op-delete-1',
+                'id' => 'op_delete1',
                 'function' => 'urn:cline:forrst:fn:test:function',
                 'status' => 'completed',
             ]);
 
             // Act
-            $repository->delete('op-delete-1');
+            $repository->delete('op_delete1');
 
             // Assert
-            expect(Operation::query()->find('op-delete-1'))->toBeNull();
+            expect(Operation::query()->find('op_delete1'))->toBeNull();
         });
 
         test('lists all operations with default limit', function (): void {
@@ -404,13 +404,13 @@ describe('DatabaseOperationRepository', function (): void {
             // Arrange
             $repository = new DatabaseOperationRepository();
             Operation::query()->create([
-                'id' => 'op-expired-1',
+                'id' => 'op_expired1',
                 'function' => 'test.func',
                 'status' => 'completed',
                 'expires_at' => now()->subDays(1),
             ]);
             Operation::query()->create([
-                'id' => 'op-expired-2',
+                'id' => 'op_expired2',
                 'function' => 'test.func',
                 'status' => 'completed',
                 'expires_at' => now()->subHours(1),
@@ -427,8 +427,8 @@ describe('DatabaseOperationRepository', function (): void {
 
             // Assert
             expect($deletedCount)->toBe(2);
-            expect(Operation::query()->find('op-expired-1'))->toBeNull();
-            expect(Operation::query()->find('op-expired-2'))->toBeNull();
+            expect(Operation::query()->find('op_expired1'))->toBeNull();
+            expect(Operation::query()->find('op_expired2'))->toBeNull();
             expect(Operation::query()->find('op-active'))->not->toBeNull();
         });
     });

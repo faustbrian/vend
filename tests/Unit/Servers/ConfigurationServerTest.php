@@ -21,7 +21,7 @@ describe('ConfigurationServer', function (): void {
         $serverData = ServerData::from([
             'name' => 'test',
             'path' => '/rpc',
-            'route' => 'rpc',
+            'route' => '/rpc',
             'version' => '1.0',
             'middleware' => [],
             'functions' => null,
@@ -47,7 +47,7 @@ describe('ConfigurationServer', function (): void {
         $serverData = ServerData::from([
             'name' => 'test',
             'path' => '/rpc',
-            'route' => 'rpc',
+            'route' => '/rpc',
             'version' => '1.0',
             'middleware' => [],
             'functions' => $configuredMethods,
@@ -65,7 +65,7 @@ describe('ConfigurationServer', function (): void {
         $serverData = ServerData::from([
             'name' => 'test',
             'path' => '/rpc',
-            'route' => 'rpc',
+            'route' => '/rpc',
             'version' => '1.0',
             'middleware' => [],
             'functions' => null,
@@ -87,7 +87,7 @@ describe('ConfigurationServer', function (): void {
         $serverData = ServerData::from([
             'name' => 'test-auto-discover',
             'path' => '/rpc',
-            'route' => 'rpc',
+            'route' => '/rpc',
             'version' => '1.0',
             'middleware' => [],
             'functions' => null,
@@ -114,7 +114,7 @@ describe('ConfigurationServer', function (): void {
         $serverData = ServerData::from([
             'name' => 'test',
             'path' => '/rpc',
-            'route' => 'rpc',
+            'route' => '/rpc',
             'version' => '1.0',
             'middleware' => [],
             'functions' => null,
@@ -146,7 +146,7 @@ describe('ConfigurationServer', function (): void {
             $serverData = ServerData::from([
                 'name' => 'test-pipeline',
                 'path' => '/rpc',
-                'route' => 'rpc',
+                'route' => '/rpc',
                 'version' => '1.0',
                 'middleware' => [],
                 'functions' => null,
@@ -180,7 +180,7 @@ describe('ConfigurationServer', function (): void {
             $serverData = ServerData::from([
                 'name' => 'test-nested',
                 'path' => '/rpc',
-                'route' => 'rpc',
+                'route' => '/rpc',
                 'version' => '1.0',
                 'middleware' => [],
                 'functions' => null,
@@ -213,7 +213,7 @@ describe('ConfigurationServer', function (): void {
             $serverData = ServerData::from([
                 'name' => 'test-ucfirst',
                 'path' => '/rpc',
-                'route' => 'rpc',
+                'route' => '/rpc',
                 'version' => '1.0',
                 'middleware' => [],
                 'functions' => null,
@@ -244,7 +244,7 @@ describe('ConfigurationServer', function (): void {
             $serverData = ServerData::from([
                 'name' => 'test-filtering',
                 'path' => '/rpc',
-                'route' => 'rpc',
+                'route' => '/rpc',
                 'version' => '1.0',
                 'middleware' => [],
                 'functions' => null,
@@ -275,7 +275,7 @@ describe('ConfigurationServer', function (): void {
             $serverData = ServerData::from([
                 'name' => 'test-interface-check',
                 'path' => '/rpc',
-                'route' => 'rpc',
+                'route' => '/rpc',
                 'version' => '1.0',
                 'middleware' => [],
                 'functions' => null,
@@ -307,7 +307,7 @@ describe('ConfigurationServer', function (): void {
             $serverData = ServerData::from([
                 'name' => 'test-return',
                 'path' => '/rpc',
-                'route' => 'rpc',
+                'route' => '/rpc',
                 'version' => '1.0',
                 'middleware' => [],
                 'functions' => null,
@@ -339,7 +339,7 @@ describe('ConfigurationServer', function (): void {
             $serverData = ServerData::from([
                 'name' => 'test-invalid',
                 'path' => '/rpc',
-                'route' => 'rpc',
+                'route' => '/rpc',
                 'version' => '1.0',
                 'middleware' => [],
                 'functions' => null,
@@ -365,7 +365,7 @@ describe('ConfigurationServer', function (): void {
             $serverData = ServerData::from([
                 'name' => 'test-no-interface',
                 'path' => '/rpc',
-                'route' => 'rpc',
+                'route' => '/rpc',
                 'version' => '1.0',
                 'middleware' => [],
                 'functions' => null,
