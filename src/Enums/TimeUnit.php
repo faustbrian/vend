@@ -138,7 +138,7 @@ enum TimeUnit: string
         };
 
         // PHP_INT_MAX / multiplier gives the maximum safe value before overflow
-        $maxSafeValue = (int) floor(PHP_INT_MAX / $multiplier);
+        $maxSafeValue = (int) (PHP_INT_MAX / $multiplier);
 
         if ($value > $maxSafeValue) {
             throw OverflowException::forOperation(sprintf('toSeconds conversion (%d %s)', $value, $this->value));
