@@ -27,13 +27,14 @@ use Override;
  * clean static access without manual container resolution. Commonly used to retrieve
  * function definitions, extension configurations, and server metadata.
  *
- * @method static ExtensionRegistry  getExtensionRegistry()  Get the extension registry for extension management
- * @method static FunctionRepository getFunctionRepository() Get the function repository for resolving functions
- * @method static array<int, string> getMiddleware()         Get HTTP middleware stack for this server
- * @method static string             getName()               Get the server name identifier
- * @method static string             getRouteName()          Get the Laravel route name for this server
- * @method static string             getRoutePath()          Get the HTTP path for this server endpoint
- * @method static string             getVersion()            Get the server version string
+ * @method static ExtensionRegistry getExtensionRegistry()
+ * @method static FunctionRepository getFunctionRepository()
+ * @method static array<int, string> getMiddleware()
+ * @method static string getName()
+ * @method static string getRouteName()
+ * @method static string getRoutePath()
+ * @method static string getVersion()
+ * @method static void validate()
  *
  * @author Brian Faust <brian@cline.sh>
  *

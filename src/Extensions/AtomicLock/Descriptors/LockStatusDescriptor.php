@@ -75,7 +75,7 @@ final class LockStatusDescriptor implements DescriptorInterface
                 description: 'Lock status information',
             )
             ->error(
-                code: ErrorCode::InvalidArgument,
+                code: ErrorCode::InvalidArguments,
                 message: 'Invalid or missing key',
                 description: 'The lock key is required and must be a non-empty string',
             );
