@@ -18,7 +18,9 @@ use Cline\Forrst\Events\FunctionExecuted;
 use Cline\Forrst\Exceptions\MustBePositiveException;
 use Cline\Forrst\Extensions\ExtensionUrn;
 use Cline\Forrst\Extensions\IdempotencyExtension;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\Facades\Cache;
 
 describe('IdempotencyExtension', function (): void {
     describe('Happy Paths', function (): void {
@@ -129,8 +131,11 @@ describe('IdempotencyExtension', function (): void {
             // Arrange
             $cache = mock(CacheRepository::class);
             $cache->shouldReceive('get')->andReturn(null);
-            $cache->shouldReceive('has')->andReturn(false);
-            $cache->shouldReceive('put')->once();
+
+            $lock = mock(Lock::class);
+            $lock->shouldReceive('get')->andReturn(true);
+
+            Cache::shouldReceive('lock')->once()->andReturn($lock);
 
             $extension = new IdempotencyExtension($cache);
             $request = new RequestObjectData(
@@ -179,9 +184,13 @@ describe('IdempotencyExtension', function (): void {
             // Arrange
             $cache = mock(CacheRepository::class);
             $cache->shouldReceive('get')->andReturn(null);
-            $cache->shouldReceive('has')->andReturn(false);
-            $cache->shouldReceive('put')->twice(); // lock + cache
-            $cache->shouldReceive('forget')->once();
+            $cache->shouldReceive('put')->once(); // cache entry
+
+            $lock = mock(Lock::class);
+            $lock->shouldReceive('get')->andReturn(true);
+            $lock->shouldReceive('release')->once();
+
+            Cache::shouldReceive('lock')->once()->andReturn($lock);
 
             $extension = new IdempotencyExtension($cache);
             $request = new RequestObjectData(
@@ -288,12 +297,14 @@ describe('IdempotencyExtension', function (): void {
             // Arrange
             $cache = mock(CacheRepository::class);
             $cache->shouldReceive('get')->andReturn(null);
-            $cache->shouldReceive('has')->andReturn(false);
-            $cache->shouldReceive('put')->once()->with(
-                Mockery::pattern('/^forrst_idempotency:.*:lock$/'),
-                Mockery::type('array'),
-                30,
-            );
+
+            $lock = mock(Lock::class);
+            $lock->shouldReceive('get')->andReturn(true);
+
+            Cache::shouldReceive('lock')
+                ->once()
+                ->with(Mockery::pattern('/^forrst_idempotency:.*:lock$/'), 30)
+                ->andReturn($lock);
 
             $extension = new IdempotencyExtension($cache);
             $request = new RequestObjectData(
@@ -316,7 +327,11 @@ describe('IdempotencyExtension', function (): void {
             // Arrange
             $cache = mock(CacheRepository::class);
             $cache->shouldReceive('get')->andReturn(null);
-            $cache->shouldReceive('has')->andReturn(true);
+
+            $lock = mock(Lock::class);
+            $lock->shouldReceive('get')->andReturn(false); // Lock acquisition fails
+
+            Cache::shouldReceive('lock')->once()->andReturn($lock);
 
             $extension = new IdempotencyExtension($cache);
             $request = new RequestObjectData(
@@ -356,20 +371,21 @@ describe('IdempotencyExtension', function (): void {
             // Arrange
             $cache = mock(CacheRepository::class);
             $cache->shouldReceive('get')->andReturn(null);
-            $cache->shouldReceive('has')->andReturn(false);
-            // Lock put (TTL 30s)
-            $cache->shouldReceive('put')->once()->with(
-                Mockery::pattern('/^forrst_idempotency:.*:lock$/'),
-                Mockery::type('array'),
-                30,
-            );
             // Cache entry put (custom TTL 7200s)
             $cache->shouldReceive('put')->once()->with(
                 Mockery::type('string'),
                 Mockery::type('array'),
                 7_200, // 2 hours in seconds
             );
-            $cache->shouldReceive('forget')->once();
+
+            $lock = mock(Lock::class);
+            $lock->shouldReceive('get')->andReturn(true);
+            $lock->shouldReceive('release')->once();
+
+            Cache::shouldReceive('lock')
+                ->once()
+                ->with(Mockery::type('string'), 30)
+                ->andReturn($lock);
 
             $extension = new IdempotencyExtension($cache);
             $request = new RequestObjectData(
@@ -511,11 +527,13 @@ describe('IdempotencyExtension', function (): void {
             // Arrange
             $cache = mock(CacheRepository::class);
             $cache->shouldReceive('get')->andReturn(null);
-            $cache->shouldReceive('has')->andReturn(false);
-            $cache->shouldReceive('put')->twice(); // lock + cache
-            $cache->shouldReceive('forget')->once()->with(
-                Mockery::pattern('/^forrst_idempotency:.*:lock$/'),
-            );
+            $cache->shouldReceive('put')->once(); // cache entry
+
+            $lock = mock(Lock::class);
+            $lock->shouldReceive('get')->andReturn(true);
+            $lock->shouldReceive('release')->once(); // Verify lock is released
+
+            Cache::shouldReceive('lock')->once()->andReturn($lock);
 
             $extension = new IdempotencyExtension($cache);
             $request = new RequestObjectData(
@@ -542,7 +560,11 @@ describe('IdempotencyExtension', function (): void {
             // Arrange
             $cache = mock(CacheRepository::class);
             $cache->shouldReceive('get')->andReturn(null);
-            $cache->shouldReceive('has')->andReturn(true);
+
+            $lock = mock(Lock::class);
+            $lock->shouldReceive('get')->andReturn(false); // Lock acquisition fails
+
+            Cache::shouldReceive('lock')->once()->andReturn($lock);
 
             $extension = new IdempotencyExtension($cache);
             $request = new RequestObjectData(
