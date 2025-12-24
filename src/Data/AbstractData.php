@@ -46,7 +46,7 @@ use function sprintf;
  * // Customizing filtering behavior
  * class CustomData extends AbstractData
  * {
- *     protected function shouldFilterValue(string $key, mixed $value): bool
+ *     protected function shouldFilterValue(int|string $key, mixed $value): bool
  *     {
  *         // Filter out null values and empty arrays
  *         return $value === null || $value === [];
@@ -110,7 +110,7 @@ abstract class AbstractData extends Data
      * @param  mixed  $value The value to evaluate
      * @return bool   True if the value should be filtered out, false otherwise
      */
-    protected function shouldFilterValue(string $key, mixed $value): bool
+    protected function shouldFilterValue(int|string $key, mixed $value): bool
     {
         return $value === null;
     }
@@ -125,7 +125,7 @@ abstract class AbstractData extends Data
      * @param  mixed  $value The value to transform
      * @return mixed  The transformed value
      */
-    protected function transformValue(string $key, mixed $value): mixed
+    protected function transformValue(int|string $key, mixed $value): mixed
     {
         return $value;
     }

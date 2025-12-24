@@ -122,10 +122,15 @@ final class OperationStatusFunction extends AbstractFunction
      */
     private function validateOperationId(string $operationId): void
     {
-        if (!preg_match('/^op_[0-9a-f]{24}$/', $operationId)) {
+        // Validate format: UUID, ULID, or prefixed format (op_/op-)
+        $isUuid = (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $operationId);
+        $isUlid = (bool) preg_match('/^[0-9A-HJKMNP-TV-Z]{26}$/i', $operationId);
+        $isPrefixed = (bool) preg_match('/^op[_-][0-9a-z]+$/i', $operationId);
+
+        if (!$isUuid && !$isUlid && !$isPrefixed) {
             throw InvalidFieldValueException::forField(
                 'operation_id',
-                'Expected format: op_<24 hex characters>',
+                'Operation ID must be a valid UUID, ULID, or prefixed format (op_/op- followed by alphanumeric)',
             );
         }
     }

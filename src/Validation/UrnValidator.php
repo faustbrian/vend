@@ -44,7 +44,8 @@ final class UrnValidator
         }
 
         // Forrst extension URNs must follow: urn:vendor:forrst:ext:name
-        if (!preg_match('/^urn:[a-z0-9][a-z0-9_-]*:forrst:ext:[a-z0-9][a-z0-9_-]*$/i', $urn)) {
+        // Allow Unicode characters in vendor and name components for internationalization
+        if (!preg_match('/^urn:[a-z0-9\p{L}][a-z0-9\p{L}_-]*:forrst:ext:[a-z0-9\p{L}][a-z0-9\p{L}_-]*$/ui', $urn)) {
             throw InvalidFieldValueException::forField(
                 'Extension '.$fieldName,
                 'must follow format \'urn:vendor:forrst:ext:name\', got: '.$urn,
@@ -73,12 +74,9 @@ final class UrnValidator
             return;
         }
 
-        // Validate array is not empty when provided
+        // Allow empty arrays - they're semantically equivalent to null for optional data
         if ($array === []) {
-            throw InvalidFieldValueException::forField(
-                'Extension '.$fieldName,
-                'cannot be an empty array. Use null instead.',
-            );
+            return;
         }
 
         // Validate depth to prevent DoS
