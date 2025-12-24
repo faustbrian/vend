@@ -181,7 +181,7 @@ describe('AsyncExtension', function (): void {
         test('markProcessing transitions operation to processing status with start timestamp', function (): void {
             // Arrange
             $pendingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Pending,
             );
@@ -189,7 +189,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($pendingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -199,7 +199,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->markProcessing('op_123');
+            $extension->markProcessing('op_123456789012345678901234');
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -208,7 +208,7 @@ describe('AsyncExtension', function (): void {
         test('markProcessing sets initial progress when provided', function (): void {
             // Arrange
             $pendingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Pending,
             );
@@ -216,7 +216,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($pendingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -225,7 +225,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->markProcessing('op_123', 0.1);
+            $extension->markProcessing('op_123456789012345678901234', 0.1);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -234,7 +234,7 @@ describe('AsyncExtension', function (): void {
         test('complete transitions operation to completed status with result and timestamp', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
@@ -243,7 +243,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -255,7 +255,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->complete('op_123', ['data' => 'success']);
+            $extension->complete('op_123456789012345678901234', ['data' => 'success']);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -264,7 +264,7 @@ describe('AsyncExtension', function (): void {
         test('fail transitions operation to failed status with errors and timestamp', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 startedAt: CarbonImmutable::parse('2024-01-15 10:00:00'),
@@ -277,7 +277,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -288,7 +288,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->fail('op_123', $errors);
+            $extension->fail('op_123456789012345678901234', $errors);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -297,7 +297,7 @@ describe('AsyncExtension', function (): void {
         test('updateProgress updates operation progress and preserves existing data', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 progress: 0.5,
@@ -307,7 +307,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -317,7 +317,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->updateProgress('op_123', 0.75);
+            $extension->updateProgress('op_123456789012345678901234', 0.75);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -326,7 +326,7 @@ describe('AsyncExtension', function (): void {
         test('updateProgress includes progress message in metadata when provided', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: ['key' => 'value'],
@@ -335,7 +335,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -345,7 +345,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->updateProgress('op_123', 0.5, 'Processing items...');
+            $extension->updateProgress('op_123456789012345678901234', 0.5, 'Processing items...');
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -491,7 +491,7 @@ describe('AsyncExtension', function (): void {
         test('updateProgress clamps progress above 1.0 to 1.0', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
             );
@@ -499,7 +499,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -508,7 +508,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->updateProgress('op_123', 1.5);
+            $extension->updateProgress('op_123456789012345678901234', 1.5);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -517,7 +517,7 @@ describe('AsyncExtension', function (): void {
         test('updateProgress clamps progress below 0.0 to 0.0', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
             );
@@ -525,7 +525,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -534,7 +534,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->updateProgress('op_123', -0.5);
+            $extension->updateProgress('op_123456789012345678901234', -0.5);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -543,7 +543,7 @@ describe('AsyncExtension', function (): void {
         test('updateProgress handles null metadata in existing operation', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: null,
@@ -552,7 +552,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -561,7 +561,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->updateProgress('op_123', 0.3, 'Working...');
+            $extension->updateProgress('op_123456789012345678901234', 0.3, 'Working...');
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -633,7 +633,7 @@ describe('AsyncExtension', function (): void {
         test('markProcessing preserves existing metadata', function (): void {
             // Arrange
             $pendingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Pending,
                 metadata: ['key' => 'value'],
@@ -642,7 +642,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($pendingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -651,7 +651,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->markProcessing('op_123');
+            $extension->markProcessing('op_123456789012345678901234');
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -660,7 +660,7 @@ describe('AsyncExtension', function (): void {
         test('complete preserves existing metadata', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: ['key' => 'value'],
@@ -669,7 +669,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -678,7 +678,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->complete('op_123', ['result' => 'data']);
+            $extension->complete('op_123456789012345678901234', ['result' => 'data']);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -687,7 +687,7 @@ describe('AsyncExtension', function (): void {
         test('fail preserves existing metadata', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 metadata: ['key' => 'value'],
@@ -696,7 +696,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -705,7 +705,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->fail('op_123', [new ErrorData(ErrorCode::InvalidRequest, 'Error')]);
+            $extension->fail('op_123456789012345678901234', [new ErrorData(ErrorCode::InvalidRequest, 'Error')]);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -714,7 +714,7 @@ describe('AsyncExtension', function (): void {
         test('fail preserves progress from processing operation', function (): void {
             // Arrange
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 progress: 0.6,
@@ -723,7 +723,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -732,7 +732,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->fail('op_123', [new ErrorData(ErrorCode::InvalidRequest, 'Error')]);
+            $extension->fail('op_123456789012345678901234', [new ErrorData(ErrorCode::InvalidRequest, 'Error')]);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -742,7 +742,7 @@ describe('AsyncExtension', function (): void {
             // Arrange
             $startedAt = CarbonImmutable::parse('2024-01-15 10:00:00');
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 startedAt: $startedAt,
@@ -751,7 +751,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -760,7 +760,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->complete('op_123', 'result');
+            $extension->complete('op_123456789012345678901234', 'result');
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
@@ -770,7 +770,7 @@ describe('AsyncExtension', function (): void {
             // Arrange
             $startedAt = CarbonImmutable::parse('2024-01-15 10:00:00');
             $processingOperation = new OperationData(
-                id: 'op_123',
+                id: 'op_123456789012345678901234',
                 function: 'urn:cline:forrst:fn:test:function',
                 status: OperationStatus::Processing,
                 startedAt: $startedAt,
@@ -779,7 +779,7 @@ describe('AsyncExtension', function (): void {
             $repository = m::mock(OperationRepositoryInterface::class);
             $repository->shouldReceive('find')
                 ->once()
-                ->with('op_123')
+                ->with('op_123456789012345678901234')
                 ->andReturn($processingOperation);
             $repository->shouldReceive('save')
                 ->once()
@@ -788,7 +788,7 @@ describe('AsyncExtension', function (): void {
             $extension = new AsyncExtension($repository);
 
             // Act
-            $extension->fail('op_123', [new ErrorData(ErrorCode::InvalidRequest, 'Error')]);
+            $extension->fail('op_123456789012345678901234', [new ErrorData(ErrorCode::InvalidRequest, 'Error')]);
 
             // Assert - Verified via mock expectations
             expect(true)->toBeTrue();
